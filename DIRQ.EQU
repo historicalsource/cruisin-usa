@@ -1,0 +1,71 @@
+*DIRQ.EQU
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+*
+*ALL INTERNAL RAM VARIABLES MUST BE DEFINED HERE, THIS .EQU IS NOT
+*AUTOMATICALLY INCLUDED IN FILES (ALPHA.H) THEREFORE TO REFERENCE
+*THESE VARIABLES YOU MUST ACTUALLY INCLUDE THIS FILE, OR ASSUME
+*THAT THESE VARIABLES ARE EXTERNAL.  - THE ONLY PROBLEM WITH ASSUMING
+*EXTERNAL VARIABLES IS THAT YOU CAN NOT USE AN EXTERNAL VARIABLE IN
+*A .SET STATEMENT.
+*
+
+
+*
+*INTERNAL RAM VARIABLES
+*
+
+_CAMERAPOS	.set	RAM0+0	;1x3 Camera position vector (floating point)
+_CAMERAVEL	.set	RAM0+3	;1x3 Camera velocity vector
+_CAMERARAD	.set	RAM0+6	;1x3 Camera radians vector
+_CAMERAMATRIX	.set	RAM0+9	;3x3 Camera rotation matrix
+_LIGHT		.set	RAM0+18	;1x3 universe illumination vector
+
+				;DIRQ PERCULIARITIES
+				;
+TMPMAT		.set	RAM0+21	;1x3 temp vector
+ROTATION_MATRIX	.set	RAM0+24	;3x3 translator matrix
+TRANSVECTOR	.set	RAM0+33	;1x3 translator vector
+LOCTEMPER_MAT	.set	RAM0+36	;3x3 scratch matrix for other routines
+POSTERMATRIX	.set	RAM0+45	;3x3 poster style matrix (X/Z) else Frnt face
+
+				;USER SPACE
+				;temporary user scratch space
+				;NOT intended for system use.
+				;
+_MATRIXA	.set	RAM0+55	;3x3 these are three 3x3 scratch matrixes
+_MATRIXB	.set	RAM0+65	;3x3 they may NOT be used by any routine
+_MATRIXC	.set	RAM0+75	;3x3 called via the interrupt
+_VECTORA	.set	RAM0+85	;1x3 ditto here except 1x3s 
+_VECTORB	.set	RAM0+90	;1x3
+_VECTORC	.set	RAM0+95	;1x3
+_VECTORD	.set	RAM0+100 ;1x3
+
+
+
+CLIPRAM		.set	RAM0+137	;(320w) RECURSIVE CLIP STACK(320 WORDS)
+CLIPRAML	.set	320
+CLIPLIM		.set	RAM0+137+320-80	;
+
+;next_entry   unknown	.set	RAM0+473+-???	;(551 ??? remain)
+
+;
+;RAM0+512 to RAM0+1023
+;is now reserved for use in FBSS space
+;see mac.equ FBSS .macro definition for use, basically to allocate a space
+;in ON-CHIP RAM use the example
+;	FBSS	symbolname,size	
+;
+
+	;
+	;insert new variable definitions here
+	;
+
+*EACH RAM BLOCK HAS 1024 WORDS
+
+FASTSTK			.set	RAM1		;256 WORDS
+BLOWLIST		.set	RAM1+256	;TRANSFORMED POINTS STORED (256 vertices) (768 WORDS)
+
+

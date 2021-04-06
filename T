@@ -1,0 +1,5 @@
+VUNIT-C30	RPD Loader	Version 1.07
+Copyright (C) 1994  by TV Games, Inc.
+
+	vector      C14000,180     100
+	head2head   C15000,1441     71%100

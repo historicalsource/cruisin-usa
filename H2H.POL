@@ -1,0 +1,36 @@
+*	h2h.pol
+*
+*	Copyright (C) 1994  by TV Games, Inc.
+*	All Right Reserved
+*
+
+
+;
+;we are about 485 lines, so lets say 490
+;befa00  == 1efa00 == line(15860)
+;
+;
+
+
+.vect	C14000
+.blow	809C00
+.caddr	C15000
+
+
+.startpos	0,0,0
+.startrad	0
+
+.tyco	\m\dc;\m\rm;\m\gg;\m\sf;\m\pch;\m\dv;\m\tun;\m\phoe1;\m\gc;\m\mw;\m\appl;\m\ch;
+
+;.sect	head2head,A00000
+.sect	head2head,AF7D00
+.dir	hed2hed
+
+p1,p2
+p1a,p2b
+redhd1,yelhd1
+big2
+
+
+.dir
+

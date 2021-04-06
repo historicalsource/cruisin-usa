@@ -1,0 +1,38 @@
+*	h2h.pol
+*
+*	Copyright (C) 1995  by TV Games, Inc.
+*	All Right Reserved
+*
+
+
+;head2head
+;we are about 485 lines, so lets say 490
+;befa00  == 1efa00 == line(15860)
+;
+
+;corn flakes shit
+;about 200 lines long, but not to clobber
+;head2head shit
+;
+;line(15660) ((* 64))
+;
+;
+
+
+.vect	C14400
+.blow	809C00
+.caddr	C16800
+
+
+.startpos	0,0,0
+.startrad	0
+
+.tyco	\m\dc;\m\rm;\m\gg;\m\sf;\m\pch;\m\dv;\m\tun;\m\phoe1;\m\gc;\m\mw;\m\appl;\m\ch;
+
+.sect	corn,AF4B00
+.dir	hed2hed
+
+cornpops
+
+.dir
+

@@ -1,0 +1,82 @@
+PComp  v2.41
+Copyright (C) 1994  by TV Games, Inc.   All Rights Reserved
+
+File:      h2h.pol
+Compiled:  Tue Jan 03 11:43:19 1995
+
+Vector_ADDR( 0C14000h)
+Blist_ADDR( 0809C00h)
+Compressed_ADDR( 0C15000h)
+
+Section Compressed Locations and Sizes
+
+Section Name   Address  Length
+
+vector         C14000h  000180h     384  (   1kb)
+head2head      C15000h  001440h    5184  (  20kb)
+
+	Statistics
+
+  vertices          = 28
+  polygons          = 7
+  objects           = 7
+  groups            = 0
+  palettes          = 3
+  GTMs              = 0
+  track sections    = 0
+  pixels            = 124160
+  sections          = 1
+  compression ratio = 5.99 to 1
+
+  Avg vertices/object  = 4.00
+  Avg polygons/object  = 1.00
+  Number of objects    = 7
+  Approximate binary size of object space:  112 words  (0kB)
+
+  Avg objects/group    = -nan
+  Number of groups     = 0
+  Approximate binary size of group space:  0 words  (0kB)
+
+  Avg entries/palette   = 179.00
+  Number of palettes    = 3
+  Approximate binary size of palettes:  274 words
+
+	 485 lines, 2% capacity
+
+Section Costs
+
+Name            Vsize    Wsize  YLines  Pals Max_Lines Max_Pals
+
+head2head         384    31040    485     0     485      0
+    Vtotal =      384  (0   600h)  (1kb)
+    Wtotal =    31040  (0 1E500h)  (121kb)
+
+
+
+List of Objects with Textures
+
+Name        Vsize    Wsize (YLines) Accs Section
+
+p1             16     2688     42     3  head2head
+redhd1         16    20288    317     1  head2head
+big2           16     8064    126     0  head2head
+
+
+Group Costs
+
+Name             Vsize   Wsize    YLines  Objs
+
+
+  Vtotal = 0
+  Wtotal = 0
+
+Largest Maps in system
+
+YLines		  Image Name		YLines		  Image Name
+
+  317                 redhd1		  126                   big2
+  126                   big2		   42                     p1
+
+Groups not referenced on the track
+
+  No errors,  No warnings

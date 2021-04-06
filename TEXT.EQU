@@ -1,0 +1,84 @@
+*TEXT.EQU
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+
+
+*ROUTINES
+	.globl	TEXT_INIT
+	.globl	TEXT_ADDDS
+	.globl	TEXT_ADD1
+	.globl	TEXT_ADD
+	.globl	TEXT_OUTPUT
+	.globl	STRCPY
+	.globl	STRCAT
+
+	.globl	SETFIXEDFONTDS,SETFIXEDFONT
+	.globl	SETFIXEDFONT15DS
+	.globl	SET18FONT,SET18FONTDS
+	.globl	SET40FONT,SET40FONTDS
+	.globl	SET12FONT,SET12FONTDS
+	.globl	SETN43FONT,SETN43FONTDS
+	.globl	SETLGDIGITFONT,SETLGDIGITFONTDS
+	.globl	SETSMDIGITFONT,SETSMDIGITFONTDS
+
+
+*DATA STRUCTURES
+	.globl	TEXT_ACTIVEI
+	.globl	TEXT_FREE_COUNT
+	.globl	TEXT_ACTIVEI
+
+	.globl	HIGHLIGHTN
+	.globl	STRCAT,STRCPY
+
+	.globl	TEXT_FREEI
+	.globl	TEXT_FREEZE
+
+
+
+FONTENT		.MACRO	PRECEDING,XSTART,XEND,YSTART,TRAIL
+		.WORD	(:PRECEDING:&0ffffh)|(:TRAIL:<<16),:XSTART:,:XEND:,:YSTART:
+		.ENDM
+
+*STRUCT FONTENTRY
+FONTENT_PRE	.set	0	;preceding pixel spaces (low 16 bits)
+FONTENT_TRAIL	.set	0	;trailing pixel spaces (high 16 bits)
+FONTENT_XSTART	.set	1
+FONTENT_XEND	.set	2
+FONTENT_YSTART	.set	3
+FONTENT_SIZE	.set	4
+*ENDSTRUCT
+
+
+
+*----------------------------------------------------------------------------
+*TEXT OUTPUT STRUCTURE  (TEXT.ASM)
+*
+*STRUCT TEXT
+TEXT_LINK	.set	00	;UH	dynamic link to next structure
+TEXT_PTR 	.set	01	;UH	pointer to the compacted text
+TEXT_FONT	.set	02	;UH	point to the font table
+TEXT_POSX	.set	03	;FL	position X
+TEXT_POSY	.set	04	;FL	position Y
+TEXT_VELX	.set	05	;FL	velocity X
+TEXT_VELY	.set	06	;FL	velocity Y
+TEXT_TIKS	.set	07	;UH	number of tiks to removal
+TEXT_COLOR	.set	08	;UH	color of text and flags
+TEXT_HEIGHT	.set	09	;UH	height of the image (DEFAULT = 28)
+TEXT_ADDR	.set	10	;UH	text dBASE
+TEXT_IMG	.set	11	;UH	image addr
+TEXT_PAL	.set	12	;
+TEXT_SIZ	.set	13	;SIZ	size of text structure
+*ENDSTRUCT
+NUM_TEXTS	.set	160
+*
+*	TEXT FLAGS
+*
+*	Flags are stored in upper 24 bits of TEXT_COLOR entry.
+*
+TXT_CENTER	.set	0100h	;center the text
+TXT_RIGHT	.set	0200h	;right justify the text
+TXT_NOPULL	.set	0400h	;remain onscreen - do not decrement tiks
+TXT_NRZ		.set	0800h	;replace all nonzero colors with COLOR
+TXT_COLOR	.set	00FFh	;the color for NZR
+*----------------------------------------------------------------------------

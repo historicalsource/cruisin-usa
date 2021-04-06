@@ -1,0 +1,460 @@
+*SYS.EQU
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+
+
+
+*RACE_MODE tells us what type of race we are having
+*are we doing the A to Z continuous (RM_USA)
+*or are we in a single race so that we must check
+*	what the next leg must be
+*
+*
+*FIRST_RACE you may only select a car (&transmission)
+*	before the first race, then you are stuck with
+*	it as long as you continue the game.
+*
+RM_USA		.set	1
+RM_SINGLE	.set	2
+
+	.globl	RACE_MODE
+	.globl	FIRST_RACE
+
+
+;I put this here because this ASSEMBLER DOES NOT RESOLVE
+;THE SCOPE OF GLOBALS, it simply ASSUMES that all globals are not constants
+COIN_ENTRY_SIZE	.set	11
+
+
+
+*----------------------------------------------------------------------------
+*A LEVEL OF INDIRECTION IS PLACED IN THE SYSTEM
+*SO THAT DIFFERENT LEVELS OF MENUS MAY BE REACHED
+*
+RACE_GG		.set	0
+RACE_SF		.set	1
+RACE_US101	.set	2
+RACE_RW		.set	3
+RACE_BH		.set	4
+RACE_LA		.set	5
+RACE_DV		.set	6
+RACE_AZ		.set	7
+RACE_GC		.set	8
+RACE_IOWA	.set	9
+RACE_CH		.set	10
+RACE_IN		.set	11
+RACE_APPL	.set	12
+RACE_DC		.set	13
+RACE_USA	.set	14
+*----------------------------------------------------------------------------
+
+*STRUCT TRACKSEL
+TS_INDEX	.set	0
+*ENDSTRUCT
+TS_SIZE		.set	1
+
+
+
+*----------------------------------------------------------------------------
+*	SYSTEM MODE FLAGS/VALUES
+*
+MBRIDGE		.set	00800h		;ON THE GG BRIDGE
+MINTUNNEL	.set	00400h		;INSIDE THE TUNNEL
+MGO		.set	00200h		;GO! RACE is ACTIVE
+MHUD		.set	00100h		;HUD on
+MWATER		.set	00080h		;INFINITY WATER on
+MINFIN		.set	00040h		;INFINITY SKY on
+MHS		.set	00020h		;HS High score entry display
+MSLINE		.set	00010h		;STARTING LINE
+
+MMODE		.set	0000Fh		;MASK main mode types
+MINACTIVE	.set	00000h		;SY network inactive node
+MDIAG		.set	00001h		;SY DIAGNOSTICS
+MATTR		.set	00002h		;SY ATTRACT
+MINTRO		.set	00003h		;GM the INTRO (GAME)
+MGAME		.set	00004h		;GM the GAME
+MBONUS		.set	00005h		;GM the BONUS screen
+MINIT		.set	00006h		;GM entering initials
+MINSERT_COINS	.set	00007h		;GM asking the questions more coins...
+MCT		.set	00008h		;GM the choose transmission
+*----------------------------------------------------------------------------
+
+
+STARTING_TIME	.set	90		;(INTRO.ASM,BONUS.ASM)
+
+
+
+MPH_CONVERSION	.set	0.49
+IMPH_CONVERSION	.set	2.04	;1/0.49
+
+
+*CAR BLOCK STRUCTURE
+*
+CARVNUM		.set	5	;	#OF CAR ROAD CONTACT POINTS
+CARVSIZ		.set	6	;	CAR POINT STRUCT SIZE
+CARPX		.set	0	;FL	CAR SUSPENSION PT X
+CARPY		.set	1	;FL	CAR SUSPENSION PT Y
+CARPZ		.set	2	;FL	CAR SUSPENSION PT Z
+CARPRDYD	.set	3	;FL	DELTA Y TO ROAD
+CARPYV		.set	4	;FL	Y VELOCITY
+CARPCOL		.set	5	;UH	ROAD OBJECT COLLIDED WITH
+
+*STRUCT	CARBLK
+CT_PX		.set	0	;FL	CAR SUSPENSION PT X (CENTERPOINT)
+CT_PY		.set	1	;FL	CAR SUSPENSION PT Y
+CT_PZ		.set	2	;FL	CAR SUSPENSION PT Z
+CT_PRDYD	.set	3	;FL	DELTA Y TO ROAD
+CT_PYV		.set	4	;FL	Y VELOCITY
+CT_PCOL		.set	5	;UH	ROAD OBJECT COLLIDED WITH
+RF_PX		.set	6	;FL	CAR SUSPENSION PT X	(RIGHT FRONT)
+RF_PY		.set	7	;FL	CAR SUSPENSION PT Y
+RF_PZ		.set	8	;FL	CAR SUSPENSION PT Z
+RF_PRDYD	.set	9	;FL	DELTA Y TO ROAD
+RF_PYV		.set	10	;FL	Y VELOCITY
+RF_PCOL		.set	11	;UH	ROAD OBJECT COLLIDED WITH
+LF_PX		.set	12	;FL	CAR SUSPENSION PT X	(LEFT FRONT)
+LF_PY		.set	13	;FL	CAR SUSPENSION PT Y
+LF_PZ		.set	14	;FL	CAR SUSPENSION PT Z
+LF_PRDYD	.set	15	;FL	DELTA Y TO ROAD
+LF_PYV		.set	16	;FL	Y VELOCITY
+LF_PCOL		.set	17	;UH	ROAD OBJECT COLLIDED WITH
+LR_PX		.set	18	;FL	CAR SUSPENSION PT X	(LEFT REAR)
+LR_PY		.set	19	;FL	CAR SUSPENSION PT Y
+LR_PZ		.set	20	;FL	CAR SUSPENSION PT Z
+LR_PRDYD	.set	21	;FL	DELTA Y TO ROAD
+LR_PYV		.set	22	;FL	Y VELOCITY
+LR_PCOL		.set	23	;UH	ROAD OBJECT COLLIDED WITH
+RR_PX		.set	24	;FL	CAR SUSPENSION PT X	(RIGHT REAR)
+RR_PY		.set	25	;FL	CAR SUSPENSION PT Y
+RR_PZ		.set	26	;FL	CAR SUSPENSION PT Z
+RR_PRDYD	.set	27	;FL	DELTA Y TO ROAD
+RR_PYV		.set	28	;FL	Y VELOCITY
+RR_PCOL		.set	29	;UH	ROAD OBJECT COLLIDED WITH
+CAR_ONROAD	.set	30	;UH	O=NOTHING,300=ROAD,310=SHOULDER,XXX=OTHER
+CAR_AIRF	.set	31	;UH	1 IF FRONT AIRBORNE, 0 IF NOT
+CAR_AIRB	.set	32	;UH	1 IF REAR AIRBORNE, 0 IF NOT
+CARTURN		.set	33	;FL	ANGLE OF FRONT WHEELS
+CARTRACTION	.set	34	;FL	TRACTION COEFF. (0=MAX TRACTION)
+CARMAXACCEL	.set	35	;FL	MAXIMUM ACCEL (PIX/16 MSEC)
+CARTHROTTLE	.set	36	;FL	THROTTLE VALUE 0-1.0 (1.0=FULL THROTTLE)
+CARSKID		.set	37	;FL	SKID VALUE 0-1.0 (1.0=FULL SKID)
+CARSPEED	.set	38	;FL	CURRENT SPEED (PIX/16 MSEC.)
+CARDIST		.set	39	;FL	CURRENT DIST TRAVELLED (PIX/16 MSEC.)
+CARXMOM		.set	40	;FL	ANGULAR MOMENTUM (X RADIANS/F)
+CARYMOM		.set	41	;FL	ANGULAR MOMENTUM (Y RADIANS/F)
+CARZMOM		.set	42	;FL	ANGULAR MOMENTUM (Z RADIANS/F)
+CARBRAKE	.set	43	;FL	BRAKING FRICTION (0-1.0)
+CARYROT		.set	44	;FL	Y ROTATION CAR BODY RADIANS
+CARVROT		.set	45	;FL	Y ROTATION CAR VELOCITY
+CARDROT		.set	46	;FL	LAST FRAME Y BODY ROTATION
+CARROT		.set	47	;FL	OVER-ROTATION FOR TURNING
+CARMASS		.set	48	;FL     MASS OF CAR (tons)
+CAR_SPIN	.set	49	;UH	SPINOUT FLAG
+CARSPRAD	.set	50	;FL	RADIANS TO SPIN
+CAR_BUMP	.set	51	;UH	BUMP FLAG 0=NO BUMP, 1-F=INTENSITY
+CARPTSTR	.set	52	;SD	TRACK PIECE	} POSITION
+CARPTSDIST	.set	53	;FL	DISTANCE	}  TRACKING 
+CARPTSRANK	.set	54	;UD	RANK		}   SYSTEM
+CARTRAK		.set	55	;UH	CLOSEST TRACK PIECE
+CARGEAR		.set	56	;UH	GEAR 0=NEUTRAL,1,2,3,4
+CARRPM		.set	57	;FL     RPMX100 (ABOUT 0.0 to 50.0)
+CARXPLUS       	.set	58	;FL	CAR BOX X EXTREMES
+CARXMINUS      	.set	59	;FL	CAR BOX X EXTREMES
+CARYPLUS       	.set	60	;FL	CAR BOX Y EXTREMES
+CARYMINUS      	.set	61	;FL	CAR BOX Y EXTREMES
+CARZPLUS       	.set	62	;FL	CAR BOX Z EXTREMES
+CARZMINUS      	.set	63	;FL	CAR BOX Z EXTREMES
+CAR_ID		.set	64	;UH	DEBUGGING CAR ID
+CARSHAD		.set	65	;UH	CAR SHADOW FLAG	ON=1, 0=OFF
+CARXLEAN	.set	66	;FL	X BODY LEAN
+CARZLEAN	.set	67	;FL	Z BODY LEAN
+CARRDFR		.set	68	;FL	ROAD FRICTION
+CAROFRDFR	.set	69	;FL	OFFROAD FRICTION
+CARDIST2CNTR	.set	70	;FL	DISTANCE TO CENTER OF ROAD
+CARWHLTAB	.set	71	;FL	WHEEL ROAD SCAN OFFSETS
+CARTRANS	.set	86	;UH	0=AUTO, 1=MANUAL TRANSMISSION
+CARTRACK_ID	.set	87	;UH	ID OF CURRENT TRACK SECTION
+CAR_OM		.set	88	;UH	OTHER MACHINE CONTROLS CAR (LINKING)
+CARNUM		.set	89	;UH	CAR DISPATCH # 0-127, B7=MASTER
+CARUPD		.set	90	;UH     CAR HAS BEEN COMM UPDATED THIS FRAME
+CARSIZ		.set	91	;SZ	TOTAL SIZE OF CAR STRUCTURE
+*ENDSTRUCT
+
+
+NUM_CARS	.set	25		;NUMBER OF CARS ACTIVE
+
+
+
+FEET		.set	48
+
+
+*STRUCT VEHTAB
+VEHTAB_MODEL	.set	0	;UH	ROM PTR TO MODEL
+VEHTAB_PAL	.set	1	;UH	MODEL PTR
+VEHTAB_ANI	.set	2	;UH	ANIMATION TABLE (0 IF NONE)
+VEHTAB_DMODEL	.set	3	;UH	DEGRADED MODEL (0 IF NONE)
+VEHTAB_DMODEL2	.set	4	;UH	DEGRADED MODEL (0 IF NONE) LEVEL 2
+VEHTAB_TAILCNT	.set	5	;UH
+VEHTAB_MASS	.set	6	;FL	MASS OF MODEL
+VEHTAB_PASSBY	.set	7	;UH	SND PTR TO PASSBY CALL
+VEHTAB_BNOISE	.set	8	;UH	SND PTR TO BACKGRND CALL
+VEHTAB_PALTAB	.set	9	;UH	PALETTE TABLE PTR
+VEHTAB_DDYNATAB	.set	10	;UH	DRONE DYNAMIC TABLE PTR
+VEHTAB_SIZE	.set	11	;SIZ
+*ENDSTRUCT
+
+
+
+*THIS IS THE LEG MAP
+*
+*
+*STRUCT LEG
+LEG_POSX	.set	0	;UH
+LEG_POSY	.set	1	;UH ALSO HAS RIGHTMOST BIT 0 = 4 LANE 1 = 2 LANE
+LEG_POSZ	.set	2	;UH
+LEG_ID		.set	3	;UH
+*ENDSTRUCT
+LEG_SIZE	.set	4	;SI
+	.globl	LEG_MAP	;RAM SPACE
+MAX_LEG_ELEMENTS	.set	1600
+
+
+*STATISTICAL STRUCTURE FOR THE GAME LEGS <NERD DATA>
+*
+*
+*
+*STRUCT	tagGAMETRAK
+GT_ETIME	.set	0	;TC	ELAPSED TIME (TIME CODED)
+GT_POS		.set	1	;UD	POSITION
+GT_MAXMPH	.set	2	;UD	MAX MPH
+GT_COLLS	.set	3	;UD	NUMBER OF COLLISIONS
+GT_SIZE		.set	4	;SIZ
+*ENDSTRUCT
+
+
+*
+*this structure has hard coded routines which depend on the
+*size being a known constant. see backgrnd.asm.  do not alter
+*the size of this structure.
+*
+*STRUCT	STRDGROUP
+DGRP_HEAD	.set	0	;UH	PTR TO HEAD OBJECT OF THE GROUP
+DGRP_BIN	.set	1	;UH	PTR TO BINARY ROM STRUCT
+DGRP_FSTART	.set	2	;UH	fLEX START
+DGRP_FLAG	.set	3	;UH	FLAGS (see below)
+DGRP_IDX	.set	4	;UH	INDEX NUMBER
+*ENDSTRUCT
+DGRP_SIZE	.set	5	;SI	sizeof(STRUCT DGROUP_S)
+
+MAX_DGROUPS	.set	20	;MAXIMUM DGROUPS ACTIVE
+
+
+
+*STRUCT	TYCOB
+TB_FLAG		.set	0	;UH
+TB_POSX		.set	1	;FL
+TB_POSY		.set	2	;FL
+TB_POSZ		.set	3	;FL
+TB_RADY		.set	4	;FL
+TB_GROUP	.set	5	;UH
+TB_GROUPOVERLAY	.set	6	;UH
+TB_REGSIZE	.set	7	;SIZ
+TB_RVS_POSX	.set	7	;FL
+TB_RVS_POSY	.set	8	;FL
+TB_RVS_POSZ	.set	9	;FL
+TB_RVS_RADY	.set	10	;FL
+TB_RVSSIZE	.set	11	;SIZ
+TB_OVER2	.set	12	; or 6 or 7
+*ENDSTRUCT
+
+
+
+*OVERLAY SECTION 'LOOK' 
+*TYCO TRACK FLAGS
+*
+SC_OVERLAY	.set	00001h
+SC_BRANCH	.set	00002h
+SC_2NDSTART	.set	00004h
+SC_REVERSE	.set	00008h
+SC_ROADMODEL	.set	00070h
+SC_OVERDSC	.set	08000h		;USE CURRENT OVERLAY 1 or 2
+SC_OVER2	.set	01000h
+
+SC_LDSECT	.set	01000h		;LOAD A NEW SECTION INTO THE SYSTEM
+SC_LDDEST	.set	06000h		;WHICH OVERLAY TO LOAD INTO (1 or 2)
+SC_LDSECT_IDX	.set	00F00h		;WHICH LOOK TO LOAD INTO OVERLAY SPACE
+SC_ROUTINE	.set	000FF0000h	;IF NON-ZERO ROUTINE SHOULD BE CALLED
+
+
+
+AUTO_TRANSMISSION	.set	0
+MANUAL_TRANSMISSION	.set	1
+
+*----------------------------------------------------------------------------
+PI		.set	3.141592654
+TWOPI		.set	6.283185307
+HALFPI		.set	1.570796327
+HALFPI3		.set	4.71238898
+
+
+*----------------------------------------------------------------------------
+*PLAYER STRUCT
+PLY_STATUS	.set	00h
+PLY_CAR		.set	01h
+PLY_PROC	.set	02h
+PLY_SIZ		.set	03h
+PLY_CBLK	.set	04h
+
+
+*----------------------------------------------------------------------------
+*GLOW BUTTONS
+*
+BUT_START	.set	1
+BUT_VIEW1	.set	2
+BUT_VIEW2	.set	4
+BUT_VIEW3	.set	8
+BUT_VIEWS	.set	0Eh
+BUT_TAILS	.set	030h
+BUT_FRONT	.set	0C0h
+
+
+
+*----------------------------------------------------------------------------
+*GENV IDS
+*
+*!!!DO NOT CHANGE THESE EQUATES!!!  MORE THAN 3 SYSTEMS RELY ON THESE!!!
+*!!!NUMBERS BEING EXACTLY AS SPECIFIED HERE.  DO NOT THINK OF CHANGING THEM!!!
+*
+BGD_BIGOBJ	.set	01000h
+BGD_ROUTINE	.set	02000h
+BGD_PALETTE	.set	04000h
+*----------------------------------------------------------------------------
+
+
+
+
+*----------------------------------------------------------------------------
+MAX_VERTICES	.set	256
+MAX_POLYGONS	.set	300		;ACTUALLY UNLIMITED AS LONG AS CONVEX
+			 
+FP		.set	AR3
+
+SCRNHX		.set	256.0		;HALF OF SCREEN X SIZE FLOAT
+SCRNHY		.set	200.0		;HALF OF SCREEN Y SIZE FLOAT
+SCREENHX	.set	256		;HALF OF SCREEN X SIZE INTEGER
+SCREENHY	.set	200		;HALF OF SCREEN Y SIZE INTEGER
+
+
+*STRUCT	VECTOR
+X		.set	0
+Y		.set	1
+Z		.set	2
+W		.set	3
+*ENDSTRUCT
+
+*STRUCT	EQUATION
+A		.set	0
+B		.set	1
+C		.set	2
+D		.set	3
+*ENDSTRUCT
+
+*STRUCT MATRIX
+A00	 	.set	0
+A01	 	.set	1
+A02	 	.set	2
+A10	 	.set	3
+A11	 	.set	4
+A12	 	.set	5
+A20	 	.set	6
+A21	 	.set	7
+A22	 	.set	8
+*ENDSTRUCT
+
+
+
+*----------------------------------------------------------------------------
+*DYNAMIC OBJECT STRUCTURE
+*
+*If the object has the dynamic object flag set then the vectors are translated
+*as follows:
+*	1.	assume a regular vertex list
+*	2.	get the first dynamic object
+*	3.	for each vertex belonging to the dynamic object:
+*		-subtract off the DYNACENTER
+*		-rotate by the DYNAMATRIX
+*		-translate by the DYNATRANS
+*		-further transform as normal:
+*			-general rotational matrix
+*			-general translation
+*			-division by depth
+*			-store into blowlist
+*	4.	continue getting dynamic objects until finished
+*
+*
+*
+*STRUCT DYNAOBJ
+DYNALINK	.set	00		;link to next DYNAOBJ
+DYNACENTERX	.set	01		;the center of the vertices
+DYNACENTERY	.set	02
+DYNACENTERZ	.set	03
+DYNATRANSX	.set	04		;the translation of the vertices
+DYNATRANSY	.set	05
+DYNATRANSZ	.set	06
+DYNAMATRIX 	.set	07		;the matrix of the vertices
+DYNAMAT00 	.set	07
+DYNAMAT10 	.set	08
+DYNAMAT20 	.set	09
+DYNAMAT01 	.set	0Ah
+DYNAMAT11 	.set	0Bh
+DYNAMAT21 	.set	0Ch
+DYNAMAT02 	.set	0Dh
+DYNAMAT12 	.set	0Eh
+DYNAMAT22 	.set	0Fh
+DYNANVERTS	.set	10h
+DYNAPARENT	.set	11h
+DYNAFLAG	.set	12h
+*ENDSTRUCT
+DYNASIZE	.set	13h
+NUM_DYNAS	.set	NUM_CARS*7
+
+
+ 
+
+
+
+*SOUND SYSTEM EQUATES
+PRIORITY	.set	00FFh
+CHAN0		.set	0000h		;
+CHAN1		.set	0100h		;
+CHAN2		.set	0200h		;
+CHAN3		.set	0300h		;
+NINT		.set	1000h		;NON INTERRUPTABLE
+ENINT		.set	2000h		;NON INTERRUPTABLE BY EQUAL
+
+
+NCHAN		.set	4
+
+
+*STRUCT SOUNDSTR
+SND_PRI		.set	0		;UH	priority (00=lowest, FF= highest)
+SND_TIM		.set	1		;UH	TIMER
+SND_TMR		.set	2		;UH	TIMER COUNTDOWN
+SND_ST		.set	3		;UH	ADDRESS OF SOUND TABLE (START)
+SND_ADDR	.set	4		;UH	ADDRESS OF SOUND TABLE (CURRENT POINTER)
+SND_VOL		.set	5		;SD	VOLUME OF TRACK
+SND_IDX		.set	6		;UH	INDEX OF SOUND
+SND_REP		.set	7		;UH	REPEAT COUNT OF SOUND
+SND_STATUS	.set	8		;UH	FLAG FX SND increment ?
+*ENDSTRUCT
+SND_SIZ		.set	9		;SIZ
+
+
+
+NUM_STATIONS	.set	4
+SURFIN_STAT	.set	0
+HARDROCK_STAT	.set	1
+COUNTRY_STAT	.set	2
+RAP_STAT	.set	3

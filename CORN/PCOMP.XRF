@@ -1,0 +1,79 @@
+PComp  v2.41
+Copyright (C) 1994  by TV Games, Inc.   All Rights Reserved
+
+File:      corn.pol
+Compiled:  Tue Jan 31 15:49:06 1995
+
+Vector_ADDR( 0C14400h)
+Blist_ADDR( 0809C00h)
+Compressed_ADDR( 0C16800h)
+
+Section Compressed Locations and Sizes
+
+Section Name   Address  Length
+
+vector         C14400h  0000FDh     253  (   0kb)
+corn           C16800h  000B71h    2929  (  11kb)
+
+	Statistics
+
+  vertices          = 28
+  polygons          = 13
+  objects           = 1
+  groups            = 0
+  palettes          = 1
+  GTMs              = 0
+  track sections    = 0
+  pixels            = 30464
+  sections          = 1
+  compression ratio = 2.60 to 1
+
+  Avg vertices/object  = 28.00
+  Avg polygons/object  = 13.00
+  Number of objects    = 1
+  Approximate binary size of object space:  124 words  (0kB)
+
+  Avg objects/group    = -nan
+  Number of groups     = 0
+  Approximate binary size of group space:  0 words  (0kB)
+
+  Avg entries/palette   = 256.00
+  Number of palettes    = 1
+  Approximate binary size of palettes:  130 words
+
+	 119 lines, 0% capacity
+
+Section Costs
+
+Name            Vsize    Wsize  YLines  Pals Max_Lines Max_Pals
+
+corn              253     7616    119     0     119      0
+    Vtotal =      253  (0   3F4h)  (0kb)
+    Wtotal =     7616  (0  7700h)  (29kb)
+
+
+
+List of Objects with Textures
+
+Name        Vsize    Wsize (YLines) Accs Section
+
+cornpops      124     7616    119     0  corn
+
+
+Group Costs
+
+Name             Vsize   Wsize    YLines  Objs
+
+
+  Vtotal = 0
+  Wtotal = 0
+
+Largest Maps in system
+
+YLines		  Image Name		YLines		  Image Name
+
+  119               cornpops		  119               cornpops
+
+Groups not referenced on the track
+
+  No errors,  No warnings

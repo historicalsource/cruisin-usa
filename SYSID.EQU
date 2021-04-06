@@ -1,0 +1,121 @@
+*SYSID.EQU
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+
+
+
+*----------------------------------------------------------------------------
+*SYSTEM IDS
+*
+*THIS LIST IS FOR ALL OBJECTS AND PROCESSES
+*THIS IS THE *ONLY* PLACE VALID IDS ARE DEFINED
+*
+*
+CLASS_M		.set	00F00h		;BIT MASKS FOR SYSTEM
+TYPE_M		.set	000F0h		;
+SUBTYPE_M	.set	0000Fh		;
+
+
+PLYR_C		.set	00100h		;into -> CAR_SUPP
+PLYR1_T		.set	00010h		;the players car and process
+
+PLYR_FLAMES_S	.set	00001h		;This is used to sort the flames
+PLYR_SMOKE_S	.set	00002h		;This is used to sort the smoke
+PLYR_SPLAT_S	.set	00003h		;This is the GOOSE SHIT
+
+
+DRONE_C		.set	00200h
+VEHICLE_T	.set	00010h
+DEAD_VEH_T	.set	00020h		;DEAD (DRONE) VEHICLE
+DELTAORIG_S	.set	00001h
+DELTA_ATTR_S	.set	00002h
+DRNE_RHO	.set	00003h
+DRNE_SIGMA	.set	00004h
+DRNE_COPCAR	.set	00005h
+DRNE_RACER	.set	00006h
+
+ANI_T		.set	00030h		;ANIMATION PROCESS
+DRNE_CHOPPER_T	.set	00050h
+RAILROAD	.set	00060h
+HELICOPTER	.set	00070h
+;RACER_T		.set	00080h
+FLYER_T		.set	00090h
+
+
+ROAD_C		.set	00300h		;into -> DRIVE_SUPP  (things to be driven over)
+SHLDR_T		.set	00010h		;general shoulder classification
+REPEL_SHLDR_T	.set	00020h		;repeling shoulder classification
+LOGRAV_T	.set	00030h		;low gravity piece
+
+
+UTIL_C		.set	00500h		;these are unclassified and uncollidable
+
+BACKGRND_T	.set	000AAh		;the background multi-processor
+COLLSCAN_T	.set	000BBh		;the collision scan process
+MONKEY_T	.set	000C0h		;monkeys and WAVEFLAG
+CHOOSECAR_T	.set	000C1h		;Choose Car in intro
+CHOOSETRANS_T	.set	000C2h		;Choose Transmission in intro
+BONUS_SCREEN_T	.set	000C3h		;Bonus RackUp
+TEXTP_T		.set	000C4h		;Text Routines
+CHOOSERACE_T	.set	000C5h		;Choose Race Screen
+RADIOPROC_T	.set	000C6h		;Radio Button Proc
+
+					;like text, smoke, explosions, skid marks, etc.
+SKID_T		.set	00010h
+SMOKE_T		.set	00020h
+TEXT_T		.set	00030h		;also logos and other stuff
+DIAL_ST		.set	00001h
+BORDER_ST	.set	00002h
+SPARK_T		.set	00040h
+LOGO_T		.set	00050h		;the logo
+DISPLAYHS_T	.set	00060h		;PROC THAT DISPLAYS THE HIGH SCORE
+FLASH_ST	.set	00001h		;SUBTYPE OF TYPE DISPLAYHS_T THAT FLASHES THE INITIALS
+
+TSIGN_C		.set	00600h		;TREEs & SIGNs (STUFF w/o thickness on SUPP LIST)
+					;into -> TSIGN_SUPP
+TSC_IMMOBILE	.set	00010h		;crash into
+TSC_I_VIBRATE	.set	00001h		;
+TSC_RUNOVER	.set	00020h		;car may run over
+TSC_R_SAGE	.set	00001h		;	sage brush
+TSC_R_POLE	.set	00002h		;	pole sign
+TSC_R_LAMPPOST	.set	00003h		;	light pole
+TSC_R_TREE	.set	00004h		;	Tree
+TSC_R_PHONEPOST	.set	00005h		;	Phone pole
+TSC_FLYING	.set	00030h		;hit & goes flying
+TSC_V_PALM	.set	00005h		;PALM = TSIGN_C|TSC_IMMOBILE|TSC_V_PALM
+TSC_HARD	.set	00040h		;MAY *NOT* GET KNOCKED DOWN (NO TOPPLE)
+TSC_ROADKILL	.set	00050h		;ROAD KILL
+TSC_COW_S	.set	00001h		;MOOOOO!
+TSC_DEER_S	.set	00002h		;a do a deer a female deer... ray a droplet full of sun
+TSC_PARTS_S	.set	00003h		;FLYING CHUNKS OF MEAT THAT CAN BE COLLIED WITH
+TSC_IGNORE	.set	00060h		;SORT, BUT DO NOTHING...
+TSC_SPARK_S    	.set	00006h		;Subcalss of TSC_IGNORE
+TSC_DUDE_S	.set	00007h		;SAL THE STUD
+TSC_BABE_S	.set	00008h		;THE BABE AT THE END OF THE RACE
+
+
+TSC_GGBRG_RAIL	.set	60h		;golden gate bridge railing
+
+RDDEBRIS_C	.set	00700h		;ROAD DEBRIS (construction horses, 55gal drums, mail boxes)
+RDD_55GAL	.set	00001h		;55Gallon Drum
+
+
+
+ROAD_SUBLIST_SS	.set	01000h		;ROAD SUBLIST SUPER SET IDENTIFIER
+
+SPAWNER_C	.set	00800h		;PROCESS WHICH SPAWNS OTHERS
+SPWN_SWITCH_T	.set	00010h		;SWITCH SCAN PROCESS
+LOAD_REQ_T	.set	00020h		;SYSTEM LOAD REQUEST
+TRAFFIC_T	.set	00030h		;TRAFFIC DISPATCHER
+COLORCYC_T	.set	00040h		;COLOR CYCLER PROCESS
+ANIMATION_T	.set	00050h		;ANIMATION PROCESS
+
+GROUND_C	.set	00900h		;GROUND (not ROAD or SHOULDER or BUILDING but GROUND)
+*----------------------------------------------------------------------------
+
+
+
+
+

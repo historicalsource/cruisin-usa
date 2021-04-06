@@ -1,0 +1,44 @@
+*ERROR.EQU
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+
+
+	.globl	ERROR_LOG
+	.globl	ERROR_LOG_DISPLAY
+
+
+
+*ERROR CODE IDS
+*
+*ID = 	xxxxCCTS
+*
+*	x unused
+*	C class
+*	T type 
+*	S subtype
+*
+*
+*
+*
+
+EC_MASK		.set	0FF00h
+ET_MASK		.set	000F0h
+ES_MASK		.set	0000Fh
+
+
+EC_OBJ		.set	00100h
+ET_ALLOC	.set	00010h
+ET_DELETE	.set	00020h
+
+EC_PROC		.set	00200h
+EC_COLL		.set	00300h
+EC_PALL		.set	00400h
+EC_BGND		.set	00500h
+EC_WATCHDOG	.set	00600h
+EC_UNFINISHED	.set	00700h
+EC_WATCHDOG2	.set	00800h	;reset triggered by > 100 frames (CUSA.ASM)
+
+
+

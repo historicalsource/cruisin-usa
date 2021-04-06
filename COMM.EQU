@@ -1,0 +1,184 @@
+*COMM.EQU
+*
+*COPYRIGHT (C) 1994 BY  TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+
+
+CDEBUG		.set	0
+
+
+*----------------------------------------------------------------------------
+*COMMUNICATION BUFFER
+*
+*in BUFSTATS
+*
+*
+BS_RDY_M	.set	003h
+BS_RDYA		.set	001h
+BS_RDYB		.set	002h
+BS_FIL_M	.set	030h
+BS_FILA		.set	010h
+BS_FILB		.set	020h
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+*COMMUNICATION BLOCKS
+*	(1 byte, all unique, NO masking)
+*
+
+CB_NULL		.set	0	;Do nothing (Padder)
+CB_MODE		.set	1	;This is my MODE
+CB_TIMECODE	.set	2	;This is my _countdown
+CB_RACENUM	.set	3	;This is my CHOSEN_RACE
+CB_VEHICLE	.set	4	;This is my CHOSEN_VEHICLE
+CB_START_GAME	.set	5	;I HAVE BOUGHT INTO MY LINKED SYSTEM
+CB_FINISHED	.set	6	;I have finished the Race
+CB_CAR_UPDATE	.set	7	;UPDATE DATA BLOCK FOR CAR
+CB_END_GAME	.set	8	;I HAVE ENDED THE GAME (ON MY SYSTEM)
+CB_HEAD2HEADT	.set	9	;LINKED MESSAGE
+CB_HEAD2HEADF	.set	10	;LINKED MESSAGE
+CB_LINKCANCELLED	.set	11	;cancelled the linkup
+
+CB_RACER_UPDATE	.set	12	;UPDATE DATA BLOCK FOR CAR
+CB_RACER_XSFER	.set	13	;XSFER DRONE TO OTHER MACHINE CONTROL
+CB_RACER_KILL	.set	14	;KILL CAR ID
+
+CB_RHO_CREATE	.set	15	;CREATE CAR ID
+CB_RHO_KILL	.set	16	;KILL CAR ID
+CB_RHO_XSFER	.set	17	;XSFER CAR ID
+CB_RHO_UPDATE	.set	18	;UPDATE CAR ID
+
+CB_FLY_KILL	.set	19	;KILL CAR ID
+CB_FLY_XSFER	.set	20	;XSFER CAR ID
+CB_FLY_UPDATE	.set	21	;UPDATE CAR ID
+
+CB_WAVEFL_READY	.set	22
+CB_WAVEFL_SET	.set	23
+CB_WAVEFL_GO	.set	24
+
+CB_OM_TRACK	.set	25
+
+CB_BONUS_SYNC0	.set	26
+CB_BONUS_SYNC1	.set	27
+CB_BONUS_SYNC2	.set	28
+CB_BONUS_SYNC3	.set	29
+
+CB_CHANGE_MUSIC	.set	30
+CB_COINDROP	.set	31
+CB_DIAGNOSTIC	.set	32
+
+CB_ATTRSND	.set	33
+
+CB_LASTMSG	.set	34
+
+*
+*
+*----------------------------------------------------------------------------
+
+
+
+
+COMMDP		.set	0997000h	;FOR DP
+COMM_CTL	.set	0997001h	;direction
+
+C_DE		.set	04000h	;data enable
+C_CE		.set	02000h	;control enable
+				;ALWAYS 1 ALWAYS
+
+C_SND		.set	C_DE|C_CE
+C_RCV		.set	C_CE
+
+*default for everything is high
+
+COMM_IO		.set	0997000h	;data and control
+
+C_IRQ		.set	00800h	;MA  NOT control, is actually interrupt 1 = INT, 0 = nothing
+C_C2		.set	00400h	;MA  just control
+C_C1		.set	00200h	;SL  just control
+C_C0		.set	00100h	;SL  just control
+
+C_IRQE		.set	08000h	;MA  NOT control enable, control enable
+C_CE2		.set	04000h	;MA  just control
+C_CE1		.set	02000h	;SL  just control
+C_CE0		.set	01000h	;SL  just control
+
+C_DMASK		.set	000FFh
+
+*we dedicate the lines by master/slave
+*
+C_MAS	.set	C_IRQE|C_CE2
+C_SLA	.set	C_CE1|C_CE0
+
+
+
+
+*FOR COMMQ.ASM
+*
+*
+
+COMM_BUFFER_SIZE	.set	600
+COMM_Q_FREEZE		.set	99Ah	;LOGICAL == "I HAVE NOTHING TO SEND"
+COMM_Q_OPEN		.set	878h	;LOGICAL == "I AM WORKING ON TRYING TO SEND SOMETHING"
+COMM_Q_READY		.set	45Bh	;LOGICAL == "I HAVE SOMETHING READY TO SEND"
+
+
+	;***	COMM.ASM
+	.globl	 RECEIVE_BUFFERI
+	.globl	 COMMQ_TMP_BUFFI 
+
+	.globl	 COMMQ_TMP_BUFF
+	.globl	 SEND_BUFFER_A
+	.globl	 SEND_BUFFER_B
+	.globl	 RECEIVE_BUFFER
+	.globl	 RECEIVE_BUFFER_SIZE
+	.globl	 SEND_BUFFER_SIZE
+	.globl	 CURR_RCV_BUFFER
+	.globl	 COMMQ_STATUS
+
+	.globl	 SBUFF_PTR,SBUFF_PTR_STRT
+	.globl	 SBUFF_LEN
+	.globl	 RBUFF_PTR
+	.globl	 RBUFF_LEN
+
+	;***	COMMQ.ASM
+	.globl	 SEND_CHANGE_MUSIC
+	.globl	 COMMQ_INIT_F
+	.globl	 COMMQ_INIT
+	.globl	 COMMQ_FREEZE
+	.globl	 COMMQ_READY
+	.globl	 MESSAGE_ADD,MESSAGE_ADD_SB
+	.globl	 DECODE_BUFFER,DECODE_BUFFER_SLAVE
+	.globl	 SEND_TIMECODE
+	.globl	 SEND_MODE,OM_MODE
+	.globl	 SEND_RACENUM,OM_CHOSEN_RACE
+	.globl	 SEND_PLAYERS_POS
+	.globl	 OM_POS
+	.globl	 SEND_OM_TRACK
+	.globl	 SEND_BSYNC0
+	.globl	 SEND_BSYNC1
+	.globl	 SEND_BSYNC2
+	.globl	 SEND_BSYNC3
+
+
+*
+*OM_STATE
+*
+*Lower two bytes are the state
+*
+*OMS_
+*
+*
+OMS_VEHICLE_M	.set	0E0h
+OMS_XVEH	.set	080h
+OMS_RACE_M	.set	00Fh
+	;use RACE_xx in sys.equ for actual race index
+
+
+OMS_CPOINT_M	.set	00F00h		;this tells the mode
+OMS_CPOINT1	.set	00100h
+OMS_CPOINT2	.set	00200h
+OMS_CPOINT3	.set	00400h
+OMS_FINISHLINE	.set	00800h
+

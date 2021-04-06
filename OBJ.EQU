@@ -1,0 +1,170 @@
+*OBJ.EQU
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+
+
+*ROUTINES
+	.globl	ZSORTWT,RESCAN
+	.globl	OSCAN,ISCAN
+	.globl	QMAKEOBJ
+	.globl	ZSORTPRIOR
+	.globl	OBJ_FREE_PROC
+	.globl	OBJ_FREE_DRIVE
+	.globl	OBJ_FREE_GROUND
+	.globl	OBJ_FREE_SIGN
+	.globl	OBJ_INIT
+	.globl	OBJ_GET
+	.globl	OBJ_GETE
+	.globl	OBJ_INSERT
+	.globl	OBJ_INSERTP
+	.globl	OBJ_INSERTHP
+	.globl	OBJ_INSERTLP
+	.globl	OBJ_FIND_FIRST
+	.globl	OBJ_FIND_FIRST_PRIORITY
+	.globl	OBJ_DELETE
+	.globl	OBJ_DELETE_CLASS
+	.globl	OBJ_PULL
+	.globl	OBJ_FREE
+	.globl	OBJ_MAKE
+	.globl	OBJ_QMAKE
+
+*DATA STRUCTURES
+	.globl	OACTIVE,OFREE,IDLE_LIST,OACTIVE_PRIORITY,OLOW_PRIORITY
+	.globl	DRIVE_LIST,_CAR_LIST,BUILD_LIST,SIGN_LIST
+	.globl	OACTIVECNT,OFREECNT,OMAX_OBJECTS
+	.globl	OLOW_PRIORITY,OHIGH_PRIORITY
+	.globl	OFREEI
+	.globl	OBJSTR,OBJSTRI
+
+NUM_OBJECTS	.set	1100
+
+DEGRADE_DIST	.set	8000
+DEGRADE_DIST_LEVEL2	.set	15000
+
+*----------------------------------------------------------------------------
+*EXTENDED OBJECT FLAGS
+*STORED AT:	*(ROMDATA-1)
+*
+*
+*31   24     16	      8		      0 bits
+*--------------------------------------
+* |    |      | flags | palette/illum |
+* |    |      |	      |	              |
+*
+*
+EOBJ_ILLUM	.set	1000h	;ILLUMINATED MODEL
+EOBJ_1PAL	.set	2000h	;SINGLE PALETTE OBJECT
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+*OBJECT FLAGS
+*
+*	KEEP FAST FLAGS IN LOWER 15 BITS FOR SINGLE INSTRUCTION MASKS
+*
+*
+O_NOUROT	.set	00001h		;object has absolute coors from UNIVPOS
+O_IROT		.set	00002h		;object has identity rotation (always facing front)
+					;this must be set w/O_NOUROT
+O_DEGRADE2	.set	00004h		;degradable Level 2 object
+O_POSTER	.set	00008h		;poster object
+O_NOCOLL	.set	00010h		;object NOT collidable			    
+O_NOUNIV	.set	00020h		;object has absolute distance from UNIVPOS
+O_ILLUM		.set	00040h		;object is facet shaded
+O_NOROT		.set	00080h		;object is NOT self rotating
+O_NOROTS	.set	O_NOUROT|O_IROT|O_NOROT
+
+O_ILLUMCOL_M	.set  0FF0000h		;mask for illumination color (O_ILLUM must be ON)
+O_ANI		.set	00100h		;object is on animation list
+O_DEGRADE	.set	00200h		;degradable object
+O_1PAL		.set	00400h		;single paletted object
+O_DYNAMIC	.set	00800h		;dynamic animation object
+
+O_GENVSPEC	.set	O_NOUROT|O_IROT|O_POSTER|O_NOCOLL|O_NOUNIV
+					;flags specifiable by GENV system
+
+					;LIST FLAGS
+					;*************************************************
+					;***THESE FLAGS SHOULD !NOT! BE SET BY THE USER***
+					;***THEY MUST ONLY BE SET BY THE SYSTEM	       ***
+					;***(INSOBJ,DELOBJ)			       ***
+					;*************************************************
+O_LIST_M	.set	03000h		;
+O_LIST0		.set	00000h		;list 0 OFREE list
+O_LIST1		.set	01000h		;list 1 OACTIVE list
+O_LIST2		.set	02000h		;list 2	OIDLE_LIST list
+O_LIST3		.set	03000h		;list 3	OACTIVE_PRIORITY list
+					;*************************************************
+
+O_GROUND	.set	000200000h	;is on the supplimental ground list
+O_GROUND_B	.set	21
+O_DEBRIS	.set	000400000h	;is on the supplimental road debris list
+O_DEBRIS_B	.set	22
+O_PROC		.set	000800000h	;has a process associated
+O_PROC_B	.set	23
+;O_OFFSET	.set	002000000h	;PHOENIX SYSTEM OBJECT
+;O_OFFSET_B	.set	25
+O_BIGOBJECT	.set	004000000h	;dont clip on Y to great
+O_BIGOBJECT_B	.set	26
+O_3DROT		.set	008000000h	;object is 3d rotated
+O_3DROT_B	.set	27
+O_DRIVE_SUPP	.set	010000000h	;is on the supplimental road list
+O_DRIVE_SUPP_B	.set	28
+O_CAR_SUPP	.set	020000000h	;is on the supplimental vehicle list
+O_CAR_SUPP_B	.set	29
+O_BUILD_SUPP	.set	040000000h	;is on the supplimental building list
+O_BUILD_SUPP_B	.set	30
+O_SIGN_SUPP	.set	080000000h	;in on the supplimental sign list
+O_SIGN_SUPP_B	.set	31
+*----------------------------------------------------------------------------
+
+
+
+*STRUCT	OBJ
+OLINK	 	.set	00h	;UH
+OPOSX	 	.set	01h	;FL
+OPOSY	 	.set	02h	;FL
+OPOSZ	 	.set	03h	;FL
+OMATRIX	 	.set	04h	;
+OMAT00	 	.set	04h	;
+OMAT10	 	.set	05h	;
+OMAT20	 	.set	06h	;
+OMAT01	 	.set	07h	;
+OMAT11	 	.set	08h	;
+OMAT21	 	.set	09h	;
+OMAT02	 	.set	0Ah	;
+OMAT12	 	.set	0Bh	;
+OMAT22	 	.set	0Ch	;
+OROMDATA 	.set	0Dh	;UH
+OFLAGS	 	.set	0Eh	;UH
+OID		.set	0Fh	;UH
+OPAL		.set	10h	;UH	for single paletted model
+;
+OVELX	 	.set	11h	;FL
+OVELY	 	.set	12h	;FL
+OVELZ	 	.set	13h	;FL
+;
+ORADX	 	.set	14h	;FL
+ORADY	 	.set	15h	;FL
+ORADZ	 	.set	16h	;FL
+OPLINK	 	.set	17h	;UH
+OBLINK4		 .set	 17h	;	used in BACKGRND.ASM
+ODEGRADE_ROM	.set	18h	;UH
+ODEGRADE_ROM2	.set	19h	;UH
+OROMDATA2	.set	1Ah	;UH	for models which interpolate or are dynamic objects
+ODYNALIST	 .set	 1Ah	;	just another name for OROMDATA2
+OCARBLK		.set	1Bh	;UH	VEHICLE BLOCK POINTER (for DRONES/PLAYERS/VEHICLES)
+OANIBLK		 .set	 1Bh	;	for animating objects
+ODIST	 	.set	1Ch	;SD	DISTANCE FROM CAMERA POSITION IN Z
+ORAD	 	.set	1Dh	;SD	RADIUS of OBJECT
+OUSR1		.set	1Eh	;UH	USER VARIABLE 1 (FORMATION LEAD)
+OLINK2		.set	1Fh	;UH	reserved for BACKGRND GROUP (DE)/ALLOCATION
+OLINK3		.set	20h	;UH	reserved for type (ie road/drone etc)
+OLINK4		.set	21h	;UH	reserved for fLEX MAIN LIST
+OBJSIZ		.set   	22h	;SIZ	OBJECT BLOCK SIZE
+*ENDSTRUCT
+
+OUSR2		.set	OLINK2
+OUSR3		.set	OLINK3
+

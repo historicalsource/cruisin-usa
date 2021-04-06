@@ -1,0 +1,1022 @@
+	.FILE	"TEXT.ASM"
+*----------------------------------------------------------------------------
+*TEXT ROUTINES
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+
+	.include	MACS.EQU
+	.include	VUNIT.EQU
+	.include	GLOBALS.EQU
+	.include	PALL.EQU
+	.include	OBJECTS.EQU
+	.include	TEXT.EQU
+	.include	TEXTTAB.EQU
+
+
+	hibss	TEXT_LIST,NUM_TEXTS*TEXT_SIZ
+	.bss	TEXT_FREE,1
+	.bss	TEXT_ACTIVE,1
+	.bss	TEXT_FREE_COUNT,1
+
+	.bss	TEXT_FREEZE,1
+
+
+TEXT_FREEI	.word	TEXT_FREE
+TEXT_ACTIVEI	.word	TEXT_ACTIVE
+TEXT_LISTI	.word	TEXT_LIST
+
+FIXEDFONT_A	.word	fixedfnt
+TEXTTABLEFIXEDI	.word	FIXEDFONT
+
+FONTDIGITLG_A
+FONTDIGITSM_A	.word	dnums_I
+
+FONT18_A	.word	font18_I
+TEXTTABLEFONT18	.word	FONT18_TAB
+FONT40_A	.word	ommdfont_I
+FONT10_A	.word	osg10fnt_I
+
+
+
+
+*----------------------------------------------------------------------------
+TEXT_INIT:
+	LDI	@TEXT_LISTI,AR2
+	LDI	@TEXT_FREEI,R2
+	LDI	@TEXT_ACTIVEI,R3
+	LDI	NUM_TEXTS-1,RC
+	LDI	TEXT_SIZ,RS
+	CALL	INIT_LINKED_LIST
+
+	LDI	NUM_TEXTS,R2
+	STI	R2,@TEXT_FREE_COUNT
+	RETS
+*----------------------------------------------------------------------------
+
+
+
+*----------------------------------------------------------------------------
+*TEXT_ADD(int *string_pointer, float posx, float posy, int tiks)
+*
+*PARAMETERS
+*	AR2	PTR TO PACKED TEXT STRING
+*	R2	(FL) POS X
+*	R3	(FL) POS Y
+*	RC	TIKS TO DISPLAY
+*RETURNS
+*	AR0	PTR TO TEXT STRUCTURE
+*
+*
+TEXT_ADDDS:
+	PUSH	AR2
+	CALL	TEXT_ADD
+	POP	AR2
+	LDI	AR0,AR1
+	CALL	TEXT_ADD
+	LDI	TXT_NRZ,R0
+	STI	R0,*+AR0(TEXT_COLOR)
+	LDF	R2,R0
+	ADDF	2,R0
+	STF	R0,*+AR0(TEXT_POSX)
+	LDF	R3,R0
+	ADDF	2,R0
+	STF	R0,*+AR0(TEXT_POSY)
+	RETS
+
+TEXT_ADD1:
+	LDI	1,RC
+TEXT_ADD:
+	PUSH	AR2
+	PUSH	R2
+	PUSHF	R2
+	LDI	@TEXT_FREEI,AR2
+	LDI	@TEXT_ACTIVEI,R2
+	CALL	GET_LLIST
+	.if	DEBUG
+	CMPI	0,AR0
+	BZ	$
+	.endif
+	LDI	@TEXT_FREE_COUNT,R2
+	DEC	R2
+	STI	R2,@TEXT_FREE_COUNT
+
+	POPF	R2
+	POP	R2
+	POP	AR2
+
+	STI	AR2,*+AR0(TEXT_PTR)
+	STF	R2,*+AR0(TEXT_POSX)
+	STF	R3,*+AR0(TEXT_POSY)
+
+	STI	RC,*+AR0(TEXT_TIKS)
+
+	CLRI	R0
+	STI	R0,*+AR0(TEXT_COLOR)	;clear the flags
+
+	CLRF	R0
+	STF	R0,*+AR0(TEXT_VELX)
+	STF	R0,*+AR0(TEXT_VELY)
+
+
+	;set default font
+	BU	SET18FONT
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+SETSMDIGITFONT:
+	LDI	12,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+
+	LDI	@FONTDIGITSM_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+
+	LDL	dnums_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+
+	LDI	@FONTDIGSMI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	RETS
+SETSMDIGITFONTDS:
+	LDI	12,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+	STI	R0,*+AR1(TEXT_HEIGHT)
+
+	LDI	@FONTDIGITSM_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+	STI	R0,*+AR1(TEXT_IMG)
+
+	LDL	dnums_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+	STI	R0,*+AR1(TEXT_PAL)
+
+	LDI	@FONTDIGSMI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	STI	R0,*+AR1(TEXT_ADDR)
+	RETS
+*----------------------------------------------------------------------------
+
+
+
+*----------------------------------------------------------------------------
+SETLGDIGITFONT:
+	LDI	22,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+
+	LDI	@FONTDIGITLG_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+
+	LDL	dnums_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+
+	LDI	@FONTDIGLGI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	RETS
+SETLGDIGITFONTDS:
+	LDI	22,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+	STI	R0,*+AR1(TEXT_HEIGHT)
+
+	LDI	@FONTDIGITLG_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+	STI	R0,*+AR1(TEXT_IMG)
+
+	LDL	dnums_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+	STI	R0,*+AR1(TEXT_PAL)
+
+	LDI	@FONTDIGLGI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	STI	R0,*+AR1(TEXT_ADDR)
+	RETS
+*----------------------------------------------------------------------------
+
+
+
+*----------------------------------------------------------------------------
+FONTN43_A	.word	lgnum43_I
+SETN43FONT:
+	LDI	40,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+
+	LDI	@FONTN43_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+
+	LDL	lgnum43_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+
+	LDI	@FONTN43TABI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	RETS
+SETN43FONTDS:
+	LDI	40,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+	STI	R0,*+AR1(TEXT_HEIGHT)
+
+	LDI	@FONTN43_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+	STI	R0,*+AR1(TEXT_IMG)
+
+	LDL	lgnum43_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+	STI	R0,*+AR1(TEXT_PAL)
+
+	LDI	@FONTN43TABI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	STI	R0,*+AR1(TEXT_ADDR)
+	RETS
+*----------------------------------------------------------------------------
+
+
+
+
+*----------------------------------------------------------------------------
+SET40FONT:
+	LDI	42,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+
+	LDI	@FONT40_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+
+	LDL	ommdfont_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+
+	LDI	@FONT40TABI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	RETS
+
+SET40FONTDS:
+	LDI	42,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+	STI	R0,*+AR1(TEXT_HEIGHT)
+
+	LDI	@FONT40_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+	STI	R0,*+AR1(TEXT_IMG)
+
+	LDL	ommdfont_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+	STI	R0,*+AR1(TEXT_PAL)
+
+	LDI	@FONT40TABI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	STI	R0,*+AR1(TEXT_ADDR)
+	RETS
+*----------------------------------------------------------------------------
+
+
+
+*----------------------------------------------------------------------------
+
+OGSMFONT_TABI	.word	OGSMFONT_TAB
+SET12FONT:
+	LDI	12,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+
+	LDI	@FONT10_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+
+	LDI	osg10fnt_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+
+	LDI	@OGSMFONT_TABI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	RETS
+
+SET12FONTDS:
+	LDI	12,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+	STI	R0,*+AR1(TEXT_HEIGHT)
+
+	LDI	@FONT10_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+	STI	R0,*+AR1(TEXT_IMG)
+
+	LDI	osg10fnt_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+	STI	R0,*+AR1(TEXT_PAL)
+
+	LDI	@OGSMFONT_TABI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	STI	R0,*+AR1(TEXT_ADDR)
+	RETS
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+SET18FONT:
+	LDI	17,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+
+	LDI	@FONT18_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+
+	LDL	font18_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+
+	LDI	@TEXTTABLEFONT18,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	RETS
+
+SET18FONTDS:
+	LDI	17,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+	STI	R0,*+AR1(TEXT_HEIGHT)
+
+	LDI	@FONT18_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+	STI	R0,*+AR1(TEXT_IMG)
+
+	LDL	font18_p,AR2
+	CALL	PAL_FIND
+	STI	R0,*+AR0(TEXT_PAL)
+	STI	R0,*+AR1(TEXT_PAL)
+
+	LDI	@TEXTTABLEFONT18,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	STI	R0,*+AR1(TEXT_ADDR)
+	RETS
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+SETFIXEDFONT:
+	LDI	6,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+
+	LDI	@FIXEDFONT_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+
+	LDL	fixedfnt_tPAL,AR2
+	CALL	PAL_FIND_RAW
+	STI	R0,*+AR0(TEXT_PAL)
+
+	LDI	@TEXTTABLEFIXEDI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	RETS
+
+SETFIXEDFONTDS:
+	LDI	6,R0
+	STI	R0,*+AR0(TEXT_HEIGHT)
+	STI	R0,*+AR1(TEXT_HEIGHT)
+
+	LDI	@FIXEDFONT_A,R0
+	STI	R0,*+AR0(TEXT_IMG)
+	STI	R0,*+AR1(TEXT_IMG)
+
+	LDL	fixedfnt_tPAL,AR2
+	CALL	PAL_FIND_RAW
+	STI	R0,*+AR0(TEXT_PAL)
+	STI	R0,*+AR1(TEXT_PAL)
+
+	LDI	@TEXTTABLEFIXEDI,R0
+	STI	R0,*+AR0(TEXT_ADDR)
+	STI	R0,*+AR1(TEXT_ADDR)
+
+;	LDF	*+AR1(TEXT_POSX),R0
+;	SUBF	-1,R0
+;	STF	R0,*+AR1(TEXT_POSX)
+;	LDF	*+AR1(TEXT_POSY),R0
+;	SUBF	-1,R0
+;	STF	R0,*+AR1(TEXT_POSY)
+	RETS
+*----------------------------------------------------------------------------
+
+
+
+*----------------------------------------------------------------------------
+*STRING LENGTH (IN PIXELS)
+*
+*
+*PARAMETERS
+*	AR2	PTR TO STRING
+*RETURNS
+*	R0	LENGTH (IN PIXEL) OF STRING
+*
+STRLEN:
+	PUSH	RS
+	PUSH	R1
+	PUSH	R2
+	PUSH	AR0
+	PUSH	AR1
+	PUSH	AR2
+
+	CLRI	R0			;length of string
+
+	CLRI	RS
+STRLP	CMPI	-32,RS
+	BNE	STLP2
+	CLRI	RS
+	NOP	*AR2++
+STLP2
+	LDI	*AR2,AR0
+	LSH	RS,AR0
+	SUBI	8,RS
+	AND	0FFh,AR0
+	CMPI	0,AR0
+	BZ	STRLENX
+	CMPI	' ',AR0
+	BEQ	STRLENNCHAR
+	SUBI	'0',AR0			;THE START OF THE FONT
+
+
+	LDI	AR0,AR1
+	MPYI	FONTENT_SIZE,AR1
+	ADDI	*+AR4(TEXT_ADDR),AR1
+
+
+	LDI	*+AR1(FONTENT_XEND),R1
+	SUBI	*+AR1(FONTENT_XSTART),R1
+
+	LDI	*+AR1(FONTENT_PRE),R2
+	LS	16,R2
+	ASH	-16,R2			;MUST SIGN EXTEND THIS DUDE
+	ADDI	R2,R1
+
+	LDI	*+AR1(FONTENT_TRAIL),R2
+	RS	16,R2
+	ADDI	R2,R1
+
+STRLENNCHAR
+	ADDI	R1,R0			;INCREASE STRING LENGTH
+	BU	STRLP
+
+STRLENX
+	POP	AR2
+	POP	AR1
+	POP	AR0
+	POP	R2
+	POP	R1
+	POP	RS
+	RETS
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+TEXT_OUTPUT:
+	PUSH	AR4
+	PUSH	AR5
+	PUSH	R4
+	PUSH	R7
+
+	BUD	NXTGRP
+	PUSHF	R7
+	NOP
+	LDI	@TEXT_ACTIVEI,AR4
+	;---->	BUD	NXTGRP
+
+
+TEXTLP
+	LDI	R0,AR4
+
+	LDI	*+AR4(TEXT_PTR),AR2
+	FIX	*+AR4(TEXT_POSX),R2
+	FIX	*+AR4(TEXT_POSY),R3
+
+ 	LDI	*+AR4(TEXT_COLOR),R0
+	TSTB	TXT_CENTER,R0
+	BZ	NO_CENTER
+
+	CALL	STRLEN
+	RS	1,R0
+	SUBI	R0,R2
+	B	TEXT_RET
+NO_CENTER
+	TSTB	TXT_RIGHT,R0
+	BZ	NO_RIGHT
+	CALL	STRLEN
+	SUBI	R0,R2
+	;B	TEXT_RET
+NO_RIGHT
+
+TEXT_RET
+
+	CLRI	RS
+OLP	CMPI	-32,RS
+	BNE	REGLP
+	CLRI	RS
+	NOP	*AR2++
+REGLP
+	LDI	*AR2,AR0
+	LSH	RS,AR0
+	SUBI	8,RS
+	AND	0FFh,AR0
+	CMPI	0,AR0
+	BZ	OUCX
+
+	CMPI	'/',AR0
+	LDIEQ	'@',AR0
+
+	CMPI	' ',AR0
+	BEQ	NXTCHAR
+	SUBI	'0',AR0			;the start of the font
+
+
+
+	;NOW PLOT OUT THE CHARACTER
+ 	LDI	*+AR4(TEXT_COLOR),R0
+	TSTB	TXT_NRZ,R0
+	BZ	IBO1
+
+	AND	0FFh,R0
+	OR	NZR|ZS|TM,R0
+	BU	IBO2
+IBO1	LDI	TM|ZS,R0
+IBO2
+
+
+	STI	R0,@_ACNTL
+
+	LDI	*+AR4(TEXT_PAL),R1
+	STI	R1,@_ACMAP
+
+	LDI	AR0,AR1
+	MPYI	FONTENT_SIZE,AR1
+	ADDI	*+AR4(TEXT_ADDR),AR1
+	
+	LDI	*+AR1(FONTENT_PRE),R0
+	LS	16,R0
+	ASH	-16,R0			;MUST SIGN EXTEND THIS DUDE
+	ADDI	R0,R2
+	LDI	*+AR1(FONTENT_XSTART),R0
+
+	LDI	*+AR1(FONTENT_YSTART),R4
+	LS	8,R4
+	OR	R4,R0
+
+	STI	R0,@_AIVI+0
+
+	LDI	*+AR4(TEXT_HEIGHT),R1
+	LS	8,R1
+	ADDI	R0,R1
+	STI	R1,@_AIVI+3
+	LDI	*+AR1(FONTENT_XEND),R0
+	OR	R4,R0
+	STI	R0,@_AIVI+1
+
+	LDI	*+AR4(TEXT_HEIGHT),R1
+	LS	8,R1
+	ADDI	R0,R1
+	STI	R1,@_AIVI+2
+
+	LDI	*+AR4(TEXT_IMG),R0
+	STI	R0,@_ADDRL
+
+	LDI	*+AR1(FONTENT_XEND),R7
+	SUBI	*+AR1(FONTENT_XSTART),R7
+
+	STI	R2,@_ARPS+0
+	STI	R2,@_ARPS+9	;FP3X
+	ADDI	R7,R2
+	STI	R2,@_ARPS+3	;FP1X
+	STI	R2,@_ARPS+6	;FP2X
+	SUBI	R7,R2
+
+	STI	R3,@_ARPS+1	;FP0Y
+	STI	R3,@_ARPS+4	;FP1Y
+
+	ADDI	*+AR4(TEXT_HEIGHT),R3
+	STI	R3,@_ARPS+7	;FP2Y
+	STI	R3,@_ARPS+10	;FP3Y
+
+	SUBI	*+AR4(TEXT_HEIGHT),R3
+
+	CALL	_stuff_fpga
+	LDI	*+AR1(FONTENT_TRAIL),R0
+	RS	16,R0
+	ADDI	R0,R7
+
+NXTCHAR
+	ADDI	R7,R2			;to next X position
+	BU	OLP
+
+OUCX
+
+	LDI	@TEXT_FREEZE,R0
+	BNZ	ISFROZEN
+	LDF	*+AR4(TEXT_POSX),R0
+	ADDF	*+AR4(TEXT_VELX),R0
+	STF	R0,*+AR4(TEXT_POSX)
+	LDF	*+AR4(TEXT_POSY),R0
+	ADDF	*+AR4(TEXT_VELY),R0
+	STF	R0,*+AR4(TEXT_POSY)
+ISFROZEN
+
+	LDI	*+AR4(TEXT_TIKS),R0
+	LDI	*+AR4(TEXT_COLOR),R1
+	TSTB	TXT_NOPULL,R1		;NOPULL = never decrement tik count
+	BNZ	NODELETE
+
+	SUBI	1,R0
+	BGT	NODELETE
+
+	LDI	*AR4,R7
+
+	LDI	@TEXT_ACTIVEI,R1	;get free list pointer
+DELLP	LDI	R1,AR1
+	LDI	*AR1,R1
+	.if	DEBUG
+	BZ	$			;lockup on end of list found
+	.endif
+
+	CMPI	R1,AR4
+	BNE	DELLP
+
+	LDI	*AR4,R1		
+	STI	R1,*AR1			;LINK AROUND
+
+	LDI	@TEXT_FREE_COUNT,R1
+	INC	R1
+	STI	R1,@TEXT_FREE_COUNT
+
+	LDI	@TEXT_FREEI,AR1		;get free list pointer
+	LDI	*AR1,R1
+	STI	R1,*AR4
+	STI	AR4,*AR1
+
+	LDI	R7,R0
+	BNZ	TEXTLP
+	B	TXTOUT
+	
+
+NODELETE
+	STI	R0,*+AR4(TEXT_TIKS)
+	
+NXTGRP
+	LDI	*AR4,R0
+	BNZ	TEXTLP
+TXTOUT
+
+	POPF	R7
+	POP	R7
+	POP	R4
+	POP	AR5
+	POP	AR4
+	RETS
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+*STRING COPY
+*
+*PARAMETERS
+*	AR0	SOURCE STRING
+*	AR1	DESTINATION STRING
+*RETURNS
+*	AR1	SOURCE STRING 
+*
+STRCPY:
+	PUSH	R0
+	PUSH	AR0
+	PUSH	AR1
+	PUSH	AR2
+
+
+	;FIND WHERE AR0 ENDS
+	CLRI	R0
+SCPLP0	CMPI	-32,R0
+	BNE	REGPLP0
+	CLRI	R0
+	NOP	*AR0++
+	NOP	*AR1++
+REGPLP0
+	LDI	*AR0,AR2
+	STI	AR2,*AR1
+	LSH	R0,AR2
+	SUBI	8,R0
+	AND	0FFh,AR2
+	CMPI	0,AR2
+	BNZ	SCPLP0
+
+	POP	AR2
+	POP	AR1
+	POP	AR0
+	POP	R0
+	RETS
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+*STRING CONCATENATION
+*
+*APPEND THE CONTENTS OF AR1 TO AR0
+*
+*PARAMETERS
+*	AR0	ORIGINAL STRING (W/SPACE FOR ADDITION)
+*	AR1	APPEND STRING
+*RETURNS
+*	AR0	ORIGINAL STRING + APPEND STRING
+*
+STRCAT:
+	PUSH	R0
+	PUSH	R1
+	PUSH	R2
+	PUSH	R3
+	PUSH	R4
+	PUSH	AR0
+	PUSH	AR1
+	PUSH	AR2
+	PUSH	AR3
+	PUSH	AR4
+
+
+	;FIND WHERE AR0 ENDS
+	CLRI	R0
+SCLP0	CMPI	-32,R0
+	BNE	REGLP0
+	CLRI	R0
+	NOP	*AR0++
+REGLP0
+	LDI	*AR0,AR2
+	LSH	R0,AR2
+	SUBI	8,R0
+	AND	0FFh,AR2
+	CMPI	0,AR2
+	BNZ	SCLP0
+
+	ADDI	8,R0
+
+
+	;NOW APPEND THE DATA
+
+	CLRI	R1
+SCLP1	CMPI	-32,R1
+	BNE	REGLP1
+	CLRI	R1
+	NOP	*AR1++
+REGLP1
+	LDI	*AR1,AR3
+	LSH	R1,AR3
+	SUBI	8,R1
+	AND	0FFh,AR3
+
+	LDI	AR3,AR4
+
+	NEGI	R0,R3
+	LSH	R3,AR3
+	LDI	*AR0,R4
+	OR	AR3,R4
+	STI	R4,*AR0
+
+	SUBI	8,R0
+	CMPI	-32,R0
+	BNE	REGLP2
+	CLRI	R0
+	NOP	*AR0++
+	STI	R0,*AR0			;IN THE CASE OF NULL ALIGNED
+REGLP2
+
+	CMPI	0,AR4
+	BNZ	SCLP1
+
+	POP	AR4
+	POP	AR3
+	POP	AR2
+	POP	AR1
+	POP	AR0
+	POP	R4
+	POP	R3
+	POP	R2
+	POP	R1
+	POP	R0
+	RETS
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+*
+*FONTENT		.macro	PRECEDING,XSTART,XEND,YSTART,TRAIL
+*
+*
+FIXEDFONT:
+	FONTENT	0,64,71,0,1	;0
+	FONTENT	0,72,79,0,1	;1
+	FONTENT	0,80,87,0,1	;2
+	FONTENT	0,88,95,0,1	;3
+	FONTENT	0,96,103,0,1	;4
+	FONTENT	0,104,111,0,1	;5
+	FONTENT	0,112,119,0,1	;6
+	FONTENT	0,120,127,0,1	;7
+	FONTENT	0,128,135,0,1	;8
+	FONTENT	0,136,143,0,1	;9
+
+				;special characters:
+				;ASCII		actual
+	FONTENT	0,144,151,0,1	; :
+	FONTENT	0,152,159,0,1	; ;
+	FONTENT	0,160,167,0,1	; <
+	FONTENT	0,48,55,0,1	; =	.
+	FONTENT	0,32,39,0,1	; >	,
+	FONTENT	0,40,47,0,1	; ?	-
+	FONTENT	0,56,63,0,1	; @	/
+
+
+	FONTENT	0,200,207,0,1	;A
+	FONTENT	0,208,215,0,1
+	FONTENT	0,216,223,0,1
+	FONTENT	0,224,231,0,1	;D
+	FONTENT	0,232,239,0,1	;E
+	FONTENT	0,240,247,0,1	;F
+	FONTENT	0,248,255,0,1	;G
+
+	FONTENT	0,0,7,7,1	;H
+	FONTENT	0,8,15,7,1
+	FONTENT	0,16,23,7,1
+	FONTENT	0,24,31,7,1
+	FONTENT	0,32,39,7,1	;L
+	FONTENT	0,40,47,7,1	;M
+	FONTENT	0,48,55,7,1	;N
+	FONTENT	0,56,63,7,1	;O
+	FONTENT	0,64,71,7,1	;P
+	FONTENT	0,72,79,7,1	;Q
+	FONTENT	0,80,87,7,1	;R
+	FONTENT	0,88,95,7,1
+	FONTENT	0,96,103,7,1
+	FONTENT	0,104,111,7,1	;U
+	FONTENT	0,112,119,7,1
+	FONTENT	0,120,127,7,1
+	FONTENT	0,128,135,7,1
+	FONTENT	0,136,143,7,1
+	FONTENT	0,144,151,7,1	;Z
+
+*----------------------------------------------------------------------------
+
+
+
+
+
+*----------------------------------------------------------------------------
+*
+*
+*PARAMETERS
+*	AR2	PTR TO TEXT ENTRY
+*	R2	CHARACTER TO HIGHLIGHT
+*	R3	PALETTE
+*
+HIGHLIGHTN:
+	INC	R2
+
+	CALL	PUSHALL
+
+	LDI	R2,IR0
+	LDI	R3,IR1
+	LDI	AR2,AR4
+
+
+	LDI	*+AR4(TEXT_PTR),AR2
+	FIX	*+AR4(TEXT_POSX),R2
+	FIX	*+AR4(TEXT_POSY),R3
+
+ 	LDI	*+AR4(TEXT_COLOR),R0
+	TSTB	TXT_CENTER,R0
+	BZ	NO_CENTERa
+
+	CALL	STRLEN
+	RS	1,R0
+	SUBI	R0,R2
+	B	text_reta
+NO_CENTERa
+	TSTB	TXT_RIGHT,R0
+	BZ	NO_RIGHTa
+	CALL	STRLEN
+	SUBI	R0,R2
+	;---->B	text_reta
+NO_RIGHTa
+
+text_reta
+
+	CLRI	BK
+	CLRI	RS
+OLPa	INC	BK
+	CMPI	-32,RS
+	BNE	REGLPa
+	CLRI	RS
+	NOP	*AR2++
+REGLPa
+	LDI	*AR2,AR0
+	LSH	RS,AR0
+	SUBI	8,RS
+	AND	0FFh,AR0
+	CMPI	0,AR0
+	BZ	oucXa
+	CMPI	' ',AR0
+	BEQ	NXTCHARa
+	SUBI	'0',AR0			;the start of the font
+
+
+	CMPI	IR0,BK
+	BEQ	ALLREG
+	BGT	oucXa
+
+
+	LDI	AR0,AR1
+	MPYI	FONTENT_SIZE,AR1
+	ADDI	*+AR4(TEXT_ADDR),AR1
+	LDI	*+AR1(FONTENT_XEND),R7
+	SUBI	*+AR1(FONTENT_XSTART),R7
+	LDI	*+AR1(FONTENT_PRE),R0
+	LS	16,R0
+	ASH	-16,R0			;MUST SIGN EXTEND THIS DUDE
+	ADDI	R0,R7
+	LDI	*+AR1(FONTENT_TRAIL),R0
+	ASH	-16,R0
+	ADDI	R0,R7
+
+	BU	NXTCHARa
+
+ALLREG
+
+
+	;NOW PLOT OUT THE CHARACTER
+ 	LDI	*+AR4(TEXT_COLOR),R0
+	AND	0FFh,R0
+	BZ	IBO1a
+	OR	NZR,R0
+IBO1a	OR	TM|ZS,R0
+
+	LDI	TM|ZS|NZR|6,R0
+	STI	R0,@_ACNTL
+
+	CLRI	IR1			;palette 0 ignore given
+	STI	IR1,@_ACMAP		;SPECIAL PALETTE
+
+	LDI	AR0,AR1
+	MPYI	FONTENT_SIZE,AR1
+	ADDI	*+AR4(TEXT_ADDR),AR1
+
+	LDI	*+AR1(FONTENT_PRE),R0
+	LS	16,R0
+	ASH	-16,R0			;MUST SIGN EXTEND THIS DUDE
+	ADDI	R0,R2
+	LDI	*+AR1(FONTENT_XSTART),R0
+
+	LDI	*+AR1(FONTENT_YSTART),R4
+	LS	8,R4
+	OR	R4,R0
+	STI	R0,@_AIVI+0
+
+	LDI	*+AR4(TEXT_HEIGHT),R1
+	LS	8,R1
+	ADDI	R0,R1
+	STI	R1,@_AIVI+3
+	LDI	*+AR1(FONTENT_XEND),R0
+	OR	R4,R0
+	STI	R0,@_AIVI+1
+
+	LDI	*+AR4(TEXT_HEIGHT),R1
+	LS	8,R1
+	ADDI	R0,R1
+	STI	R1,@_AIVI+2
+
+	LDI	*+AR4(TEXT_IMG),R0
+	STI	R0,@_ADDRL
+
+	LDI	*+AR1(FONTENT_XEND),R7
+	SUBI	*+AR1(FONTENT_XSTART),R7
+
+	STI	R2,@_ARPS+0
+	STI	R2,@_ARPS+9	;FP3X
+	ADDI	R7,R2
+	STI	R2,@_ARPS+3	;FP1X
+	STI	R2,@_ARPS+6	;FP2X
+	SUBI	R7,R2
+
+	STI	R3,@_ARPS+1	;FP0Y
+	STI	R3,@_ARPS+4	;FP1Y
+
+	ADDI	*+AR4(TEXT_HEIGHT),R3
+	DEC	R3
+	STI	R3,@_ARPS+7	;FP2Y
+	STI	R3,@_ARPS+10	;FP3Y
+
+	SUBI	*+AR4(TEXT_HEIGHT),R3
+	INC	R3
+
+	CALL	_stuff_fpga
+	LDI	*+AR1(FONTENT_TRAIL),R0
+	ASH	-16,R0
+	ADDI	R0,R7
+
+NXTCHARa
+	ADDI	R7,R2			;to next X position
+	BU	OLPa
+
+oucXa
+	CALL	POPALL
+	RETS
+*----------------------------------------------------------------------------
+	.END
+

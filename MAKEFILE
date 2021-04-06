@@ -1,0 +1,336 @@
+#	CRUIS'N USA
+#
+#	Copyright (C) 1994  by TV Games, Inc.
+#	All Rights Reserved
+
+
+
+C_OPTIONS=-k -g -mn -mb -mm -al  -mr -ic:\c30tools -ma -mc -x2 -q
+ASM_OPTIONS=-l -q
+LNK_OPTIONS=-q
+BACKUP=*.asm *.cmd *.c *.h *.equ *.inc makefile cusa.tvs cusa.tyc cusa.pol *.str *.pal *.exe
+WDIR=e:
+
+
+.TYPE.ASM	= .asm
+.HDR.asm	= ^[ \t]*.include[\ \t]+\([^ \t]+\)
+
+
+%.obj :  %.asm
+	@echo $*.asm
+	@asm30 $(ASM_OPTIONS) $*.asm $(WDIR)$*.obj $(WDIR)$*.lst
+	@copy $(WDIR)$*.obj . > NUL
+	@copy $(WDIR)$*.lst . > NUL
+	@del $(WDIR)$*.lst > NUL
+
+
+OBJS		= attracta.obj attrdrne.obj audits.obj backgrnd.obj \
+		  bonus.obj bssstart.obj chopper.obj cksum.obj cmos.obj \
+		  coin.obj cointab.obj colla.obj comm.obj commdrne.obj \
+		  commq.obj comp.obj cornobj.obj cusa.obj date.obj delta.obj \
+		  diag.obj dirq.obj drones.obj effects.obj error.obj \
+		  flame.obj font.obj font1a.obj galil.obj h2hobj.obj \
+		  heads.obj hottub.obj hpmath.obj hstdp.obj hud.obj \
+		  infin.obj intro.obj invtab30.obj leg.obj line.obj map.obj \
+		  math.obj memtest.obj motion.obj mproc.obj obj.obj \
+		  objects.obj overlay.obj pall.obj plyr.obj racer.obj \
+		  rho.obj roadblck.obj roadkill.obj routs.obj rroad.obj \
+		  setups.obj sigma.obj smoke.obj snd.obj sndtaba.obj \
+		  text.obj texttab.obj totala.obj tracksel.obj trans.obj \
+		  util.obj wave.obj wheel.obj
+PROGRAM		= cusa.out
+SRCS		= attracta.asm attrdrne.asm audits.asm backgrnd.asm \
+		  bonus.asm bssstart.asm chopper.asm cksum.asm cmos.asm \
+		  coin.asm cointab.asm colla.asm comm.asm commdrne.asm \
+		  commq.asm comp.asm cornobj.asm cusa.asm date.asm delta.asm \
+		  diag.asm dirq.asm drones.asm effects.asm error.asm \
+		  flame.asm font.asm font1a.asm galil.asm h2hobj.asm \
+		  heads.asm hottub.asm hpmath.asm hstdp.asm hud.asm \
+		  infin.asm intro.asm invtab30.asm leg.asm line.asm map.asm \
+		  math.asm memtest.asm motion.asm mproc.asm obj.asm \
+		  objects.asm overlay.asm pall.asm plyr.asm racer.asm \
+		  rho.asm roadblck.asm roadkill.asm routs.asm rroad.asm \
+		  setups.asm sigma.asm smoke.asm snd.asm sndtaba.asm \
+		  text.asm texttab.asm totala.asm tracksel.asm trans.asm \
+		  util.asm wave.asm wheel.asm
+
+
+All :	cusa.out
+	@tv30 cusa /P$(WDIR)
+
+oe:
+	copy *.obj e:
+
+bz :	cusa.out
+	@del cusa.zip
+	@baczip cusa $(BACKUP)
+	move *.zip d:\gamearc
+
+abac :	cusa.out
+	@pkzip a:\cusa.zip $(BACKUP)
+
+mf :
+	mkmf *.asm makefile -dL -v
+
+upnet:	
+	rem cusa.out
+	del rpd.zip > NUL
+	pkzip cusa $(BACKUP)
+	copy cusa.zip s:\cusa
+	copy cusa.out s:\cusa
+	rem copy \m\cusa.rpd s:\cusa
+	copy \m\h2h.rpd s:\cusa
+
+upcode:	cusa.out
+	del cusa.zip > NUL
+	pkzip cusa $(BACKUP)
+	copy cusa.zip s:\cusa
+	copy cusa.out s:\cusa
+
+
+date .REREAD :
+	(@mkdate ; make cusa.out)
+
+warm :
+	@tv30 cusa /W /C
+
+bac :
+	@pkzip a:cusa -p $(BACKUP)
+
+simg :	cusa.out
+	@hi
+	@plod h2h
+	@plod cusa
+	@tv30 cusa
+
+sndtab.inc .REREAD :	stable.inc
+	sndc stable.inc
+
+sndtaba.obj :	sndtab.inc 
+	@echo sndtaba.asm
+	@asm30 $(ASM_OPTIONS) sndtaba.asm $(WDIR)sndtaba.obj $(WDIR)sndtaba.lst
+	@copy $(WDIR)$*.obj . > NUL
+	@copy $(WDIR)$*.lst . > NUL
+	@del $(WDIR)$*.lst > NUL
+
+
+cusa.str :	sys.equ mproc.equ obj.equ pall.equ text.equ
+	@echo Cusa.Str
+	@strpul sys.equ cusa.str > NUL
+	@strpul mproc.equ cusa.str -a > NUL
+	@strpul obj.equ cusa.str -a > NUL
+	@strpul pall.equ cusa.str -a > NUL
+	@strpul text.equ cusa.str -a > NUL
+
+COBJS =	line.obj	hpmath.obj
+
+
+$(COBJS) :	$*.c
+	@cl30 $(C_OPTIONS) $*.c -fr$(WDIR)
+	@copy $(WDIR)$*.obj . > NUL
+
+cusa.out : cusa.str sndtaba.obj $(OBJS) cusa.cmd
+	@echo cusa.cmd
+	@lnk30 $(LNK_OPTIONS) cusa.cmd
+	@copy $(WDIR)cusa.out . > NUL
+	@copy $(WDIR)cusa.map . > NUL
+	@beeper SaSiSaSiSaSiSa
+
+### OPUS MKMF:  Do not remove this line!  Generated dependencies follow.
+
+attracta.obj: cmos.equ globals.equ macs.equ mproc.equ obj.equ objects.equ \
+	 sndtab.equ sys.equ text.equ vunit.equ
+
+attrdrne.obj: c30.equ cmos.equ delta.equ dirq.equ globals.equ macs.equ \
+	 mproc.equ obj.equ objects.equ pall.equ sndtab.equ sys.equ \
+	 sysid.equ text.equ vunit.equ
+
+audits.obj: c30.equ cmos.equ diag.equ dirq.equ error.equ globals.equ \
+	 macs.equ sys.equ sysid.equ text.equ vunit.equ
+
+backgrnd.obj: babe.pal cmos.equ cornobj.equ globals.equ macs.equ mproc.equ \
+	 obj.equ objects.equ pall.equ sndtab.equ sys.equ sysid.equ \
+	 vunit.equ
+
+bonus.obj: cmos.equ comm.equ delta.equ globals.equ h2hobj.equ macs.equ \
+	 mproc.equ obj.equ objects.equ ommdfont.pal pall.equ sndtab.equ \
+	 sys.equ sysid.equ text.equ vunit.equ
+
+bssstart.obj: macs.equ
+
+chopper.obj: cmos.equ delta.equ globals.equ macs.equ mproc.equ obj.equ \
+	 objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+cmos.obj: c30.equ cmos.equ globals.equ macs.equ sys.equ vunit.equ
+
+coin.obj: cmos.equ globals.equ macs.equ mproc.equ objects.equ pall.equ \
+	 sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+cointab.obj: c30.equ cmos.equ globals.equ macs.equ sys.equ vunit.equ
+
+colla.obj: c30.equ cmos.equ comm.equ delta.equ dirq.equ globals.equ \
+	 macs.equ mproc.equ obj.equ objects.equ pall.equ sndtab.equ sys.equ \
+	 sysid.equ text.equ vunit.equ
+
+comm.obj: c30.equ cmos.equ comm.equ globals.equ macs.equ mproc.equ obj.equ \
+	 objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+commdrne.obj: cmos.equ comm.equ delta.equ globals.equ h2hobj.equ macs.equ \
+	 mproc.equ obj.equ objects.equ pall.equ racer.equ sndtab.equ \
+	 sys.equ sysid.equ text.equ vunit.equ
+
+commq.obj: cmos.equ comm.equ delta.equ globals.equ macs.equ mproc.equ \
+	 obj.equ objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+comp.obj: c30.equ globals.equ macs.equ mproc.equ objects.equ sys.equ \
+	 sysid.equ text.equ vunit.equ
+
+cusa.obj: c30.equ checksum.equ cmos.equ comm.equ date.asm dirq.equ \
+	 error.equ globals.equ macs.equ mproc.equ obj.equ objects.equ \
+	 pall.equ sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+delta.obj: c30.equ cmos.equ delta.equ globals.equ macs.equ mproc.equ \
+	 obj.equ objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+diag.obj: audits.asm c30.equ cmos.equ diag.equ dirq.equ error.equ \
+	 globals.equ macs.equ mproc.equ objects.equ pall.equ sndtab.equ \
+	 sys.equ sysid.equ text.equ vunit.equ
+
+dirq.obj: c30.equ dirq.equ globals.equ macs.equ mproc.equ obj.equ sys.equ \
+	 sysid.equ vunit.equ
+
+drones.obj: c30.equ cmos.equ delta.equ globals.equ macs.equ mproc.equ \
+	 obj.equ objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+effects.obj: globals.equ macs.equ mproc.equ obj.equ objects.equ sysid.equ
+
+error.obj: cmos.equ diag.equ error.equ globals.equ macs.equ mproc.equ \
+	 obj.equ objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+flame.obj: cmos.equ globals.equ macs.equ mproc.equ obj.equ objects.equ \
+	 pall.equ sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+font1a.obj: c30.equ macs.equ text.equ vunit.equ
+
+galil.obj: cmos.equ globals.equ macs.equ mproc.equ objects.equ pall.equ \
+	 sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+heads.obj: cmos.equ globals.equ macs.equ mproc.equ obj.equ objects.equ \
+	 pall.equ sndtab.equ sys.equ sysid.equ text.equ vantab.inc \
+	 vunit.equ
+
+hottub.obj: cmos.equ globals.equ macs.equ mproc.equ obj.equ objects.equ \
+	 pall.equ sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+hstdp.obj: cmos.equ globals.equ macs.equ mproc.equ obj.equ objects.equ \
+	 pall.equ plate.pal scroll.pal sndtab.equ sys.equ sysid.equ \
+	 text.equ vunit.equ
+
+hud.obj: c30.equ cmos.equ dirq.equ globals.equ macs.equ mproc.equ obj.equ \
+	 objects.equ pall.equ rpm.pal sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+infin.obj: globals.equ macs.equ obj.equ objects.equ pall.equ sys.equ \
+	 vunit.equ
+
+intro.obj: cmos.equ comm.equ delta.equ error.equ glight.pal globals.equ \
+	 h2hobj.equ light.pal macs.equ mproc.equ obj.equ objects.equ \
+	 pall.equ racer.equ sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+leg.obj: globals.equ macs.equ objects.equ sys.equ vunit.equ
+
+map.obj: globals.equ h2hobj.equ macs.equ mproc.equ obj.equ objects.equ \
+	 pall.equ sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+math.obj: c30.equ cmos.equ dirq.equ globals.equ macs.equ mproc.equ \
+	 objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+memtest.obj: c30.equ checksum.equ cksum.equ cmos.equ diag.equ globals.equ \
+	 macs.equ sys.equ vunit.equ
+
+motion.obj: cmos.equ diag.equ globals.equ macs.equ mproc.equ objects.equ \
+	 pall.equ sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+mproc.obj: c30.equ error.equ macs.equ mproc.equ vunit.equ
+
+obj.obj: error.equ globals.equ macs.equ mproc.equ obj.equ pall.equ sys.equ \
+	 sysid.equ vunit.equ
+
+overlay.obj: c30.equ cmos.equ delta.equ dirq.equ globals.equ macs.equ \
+	 mproc.equ objects.equ pall.equ sndtab.equ sys.equ sysid.equ \
+	 text.equ vunit.equ
+
+pall.obj: error.equ globals.equ macs.equ mproc.equ objects.equ pall.equ \
+	 sys.equ vunit.equ
+
+plyr.obj: c30.equ cmos.equ comm.equ delta.equ dirq.equ globals.equ macs.equ \
+	 mproc.equ obj.equ objects.equ pall.equ sndtab.equ sys.equ \
+	 sysid.equ text.equ vunit.equ
+
+racer.obj: cmos.equ comm.equ delta.equ globals.equ macs.equ mproc.equ \
+	 obj.equ objects.equ pall.equ racer.equ sndtab.equ sys.equ \
+	 sysid.equ text.equ vunit.equ
+
+rho.obj: cmos.equ comm.equ delta.equ globals.equ macs.equ mproc.equ obj.equ \
+	 objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+roadblck.obj: cmos.equ globals.equ macs.equ mproc.equ obj.equ objects.equ \
+	 pall.equ sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+roadkill.obj: cmos.equ cow.pal globals.equ macs.equ mproc.equ obj.equ \
+	 objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+rroad.obj: cmos.equ delta.equ globals.equ macs.equ mproc.equ obj.equ \
+	 objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+setups.obj: cmos.equ cornobj.equ globals.equ macs.equ mproc.equ objects.equ \
+	 pall.equ sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+sigma.obj: cmos.equ delta.equ globals.equ macs.equ mproc.equ obj.equ \
+	 objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+smoke.obj: globals.equ macs.equ mproc.equ obj.equ objects.equ pall.equ \
+	 sys.equ sysid.equ vunit.equ
+
+snd.obj: cmos.equ comm.equ globals.equ macs.equ mproc.equ objects.equ \
+	 sndtab.equ sys.equ sysid.equ text.equ vunit.equ
+
+sndtaba.obj: sndtab.inc sys.equ
+
+text.obj: globals.equ macs.equ objects.equ pall.equ text.equ texttab.equ \
+	 vunit.equ
+
+texttab.obj: macs.equ text.equ texttab.equ
+
+totala.obj: globals.equ macs.equ pall.equ vunit.equ
+
+tracksel.obj: cmos.equ comm.equ delta.equ error.equ globals.equ macs.equ \
+	 mproc.equ obj.equ objects.equ pall.equ sndtab.equ sys.equ \
+	 sysid.equ text.equ vunit.equ
+
+trans.obj: cmos.equ delta.equ engine.pal globals.equ macs.equ mproc.equ \
+	 obj.equ objects.equ pall.equ sndtab.equ sys.equ sysid.equ text.equ \
+	 vunit.equ
+
+util.obj: c30.equ cmos.equ delta.equ dirq.equ globals.equ macs.equ \
+	 mproc.equ obj.equ objects.equ pall.equ sndtab.equ sys.equ \
+	 sysid.equ text.equ vunit.equ
+
+wave.obj: c30.equ caravan.pal cmos.equ comm.equ cvette.pal dirq.equ \
+	 dnums2.pal font18.pal font43.pal globals.equ gtruck.pal h2hobj.equ \
+	 hotrod.pal jeep.pal macs.equ missle.pal mproc.equ muscle.pal \
+	 obj.equ objects.equ osg10fnt.pal pall.equ ptruckg.pal smoke.pal \
+	 sndtab.equ sys.equ sysid.equ testor.pal text.equ vunit.equ
+
+wheel.obj: globals.equ macs.equ sys.equ

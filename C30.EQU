@@ -1,0 +1,51 @@
+*C30.EQU
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+
+
+*----------------------------------------------------------------------------
+*STATUS WORD FLAGS
+INT0_M		.set	1		;DISPLAY INT
+INT1_M		.set	2		;TV30 INT
+INT2_M		.set	4		;COMM INT
+INT3_M		.set	8		;ATOD INT
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+*ON CHIP RAM BLOCKS
+RAM0		.set	0809800h
+RAM1		.set	0809C00h
+
+*----------------------------------------------------------------------------
+*WAIT STATE GENERATION
+CPU_WS	  	.set	0808064h	;WAIT STATE CPU CONTROL REGISTER
+
+SOFT_WS		.set	00470h
+
+HARD_WS		.set	01000h		;WAVE RAM & SCREEN RAM
+CMOS_WS		.set	00090h		;CMOS ACCESS
+
+
+*----------------------------------------------------------------------------
+*TIMER DEFINES
+*
+TIMER_CNTL1	.set	808020h
+TIMER_CNTL2	.set	808030h
+TIMER_CNTR1	.set	808024h
+TIMER_CNTR2	.set	808034h
+TIMER_PERIOD1	.set	808028h
+TIMER_PERIOD2	.set	808038h
+
+
+TMR_GO		.set	40h	;reset and start timer counter
+TMR_HOLD	.set	80h	;=0 -> suspend
+
+TMR_RESET_GO	.set	TMR_GO|TMR_HOLD
+TMR_SUSPEND	.set	0
+
+
+	.globl	TIMER_RESET,TIMER_READ
+

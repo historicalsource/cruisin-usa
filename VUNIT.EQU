@@ -1,0 +1,313 @@
+*VUNIT.EQU
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+
+
+DEBUG		.set	0	;0 = NO DEBUG CODE
+PRINTER		.set	0	;1 = PRINTER IS AVAILABLE
+STATISTICS	.set	0	;1 = BOG OUT STATISTICS GENERATION
+CODE_CHECK	.set	0	;1 = LOCK ON CODE INTEGRITY ERROR
+;COMMP		.set	1	;1 = COMMUNICATION CODE ACTIVE
+;see also: COMM.EQU
+
+
+
+
+
+*----------------------------------------------------------------------------
+*MEMORY MAP
+*
+FASTRAM		.set	0000000h	;PROGRAM RAM
+SCREEN		.set	0900000h 	;VIDEO SCREEN RAM (512 HORIZ X 1024 VERT)
+SCREEN0		.set	0900000h 	;PAGE 0		3 HW STATES
+SCREEN1		.set	0940000h 	;PAGE 1		PAL BITS 15-8, COL BITS 7-0
+CMOS		.set	09C0000H 	;MASK=0FF000000h, LEN = 02000h   4 SW STATES
+COLORAM		.set	09E0000h 	;32K X 24 BITS RGB	2 SW STATES
+WAVERAM		.set	0A00000h	;WAVE RAM DMA ACCESSABLE 2D IMAGE STORE
+
+SND2		.set	09A0000h	;ONBOARD NEW SOUND PORT
+
+OUT1		.set	0996000h 	;IDE 
+SOUND		.set	0995000h 	;SOUND OUTPUT PORT
+DIPSW		.set	0992000h 	;DIP SWITCHES
+
+SWITCH1		.set	0991060h 	;SWITCH INPUTS	(bits 15-8)
+SWITCH2		.set	0991050h 	;SWITCH INPUTS	(bits 15-8)
+SWITCH3		.set	0991030h 	;SWITCH INPUTS	(bits 15-8)
+
+
+FASTRAM		.set	0000000h 	;FAST STATIC RAM
+*----------------------------------------------------------------------------
+
+
+
+
+*----------------------------------------------------------------------------
+*DMA CONTROL WORD 
+*
+DITHER		.set	02000h		;DITHER
+CLIPEN		.set	01000h		;DO NOT CLIP THIS POLYGON
+ZS		.set	00800h		;ZERO SUPRESS
+NZR		.set	00400h		;NON-ZERO REPLACEMENT
+METHOD		.set	00300h		;METHOD OF PLOTTING
+FASTCC		.set	00200h		;FAST CONSTANT COLOR (NO IVs OR ADDR)
+TM		.set	00100h		;TEXTURE MAPPING
+CC		.set	00000h		;CONSTANT COLOR
+COLOR		.set	000FFh		;COLOR FIELD
+*----------------------------------------------------------------------------
+
+
+
+
+*----------------------------------------------------------------------------
+*	FIFO EQUATES
+*
+
+FIFO_STATUS	.set	0980082h	;READ ANYTIME, GENERAL STATUS (4 BITS) (READ ONLY)
+FIFO_STATUS_FD_CRITICAL	.set	08h	;FIFO DATA BUS IS BEING USED
+FIFO_STATUS_MAX_FLAG	.set	04h	;FIFO IS MAXED OUT (NO ENTRIES LEFT)
+FIFO_STATUS_DMA_ACTIVE	.set	02h	;DMA IS PLOTTING AN IMAGE TO THE SCREEN (even if no fifo used)
+FIFO_STATUS_FIFO_NEMPTY	.set	01h	;FIFO IS NOT EMPTY
+
+FIFO_CONTROL	.set	0980080h	;READ/WRITE  CONTROL REGISTER 0
+FIFO_CONTROL_DMA_RUNSEL	.set	08h	;(0) -> (1) ENABLES DMA TO RUN  user should set to 1 on powerup, is 0 on powerup otherwise
+FIFO_CONTROL_COUNTER_LD	.set	04h	;(0) -> (0) ENABLES USER TO LOAD # OF ENTIRES IN FIFO  (mostly useless)
+FIFO_CONTROL_FIFO_RST	.set	02h	;(1) -> (0) RESETS THE FIFO COUNTER (NOT FIFO)  (set to 1)
+FIFO_CONTROL_RST_CT_CHN	.set	01h	;(1) -> (0) CRT CONTROLLER RESET user should set to 0 on powerup
+
+FIFO_CONTROL_INIT	.set	FIFO_CONTROL_DMA_RUNSEL
+
+
+FIFO_CNTR	.set	0980000h	;READ	FIFO COUNTER 15-0
+FIFO_SIZE	.set	0980041h	;WRITE	MAX ENTRIES FOR FIFO  (271 FOR 4k FIFO)
+FIFO_INC	.set	0980083h	;READ	THIS PERFORMS THE SAME FUNCTION AS FIFO
+					;	STATUS, BUT ALSO INCREMENTS THE FIFO ENTRIES
+FIFO_ADDR	.set	0600000h	;WRITE
+
+
+
+*
+*THIS IS UNTESTED 7/13/93
+*to access the 'other' wave ram bank (for WRITING!!!)
+*	1)	set FIFO_CONTROL_DMA_RUNSEL <- 0
+*	2)	dma will not initiate another BLIT
+*	3)	check the FIFO_STATUS_FD_CRITICAL in FIFO_STATUS
+*			until == 0
+*	4)	now able to update DMA_SETUP  (DMA_WAVE_RAM_BANK)
+*	5)	set FIFO_CONTROL_DMA_RUNSEL <- 1
+*
+*This method is also usable for opto counters.
+*
+
+
+
+
+*
+*	DMA EQUATES
+*
+*
+
+DMA_SETUP	.set	0980040h	;READ/WRITE	A VERY IMPORTANT REGISTER
+DMA_WDVD_DISABLE	.set	08000h	;0 0	LSI TESTING ALWAYS SET TO 0  (HW BACKDOOR)
+DMA_CHIP_TRISTATE	.set	04000h	;0 0	LSI TESTING ALWAYS SET TO 0  (HW BACKDOOR)
+DMA_CHIP_DISABLE	.set	02000h	;0 0	IF SET TO 1, CHIP LOCKUP ONLY UNDOABLE BY CHIP RESET
+DMA_TEST_TOGGLE		.set	01000h	;0 0	LSI TESTING ALWAYS SET TO 0  (HW BACKDOOR)
+DMA_TEST_MODE		.set	00800h	;0 0	LSI TESTING ALWAYS SET TO 0  (HW BACKDOOR)
+DMA_MODE_32		.set	00400h	;0 0	FUTURE EXPANSION ALWAYS SET TO 0
+DMA_FIFO_INC_DISABLE2	.set	00200h	;0 1	HW KLUDGE SEE MARK ALWAYS SET TO 1
+DMA_FIFO_INC_DISABLE	.set	00100h	;0 0	HW KLUDGE TO DISABLE
+DMA_DITHER_PHASE	.set	00080h	;0 0	(0 = EVEN ON, 1 = EVEN OFF)
+DMA_POLY_ABORT_DISABLE	.set	00040h	;0 0	(1 == DISABLE THE BONEHEAD ABORTION, EX ALL NEG.))
+DMA_REVERSE_WRITE_DIS	.set	00020h	;0 0	(1 == DISABLE THE FAST MATH REVERSE PLOTTING)
+DMA_NO_FIFO_BIT		.set	00010h	;0 0	"DONT GRAB DATA FROM THE FIFO, DMA REGS ALREADY SETUP"
+DMA_WAVE_RAM_BANK	.set	00008h	;0 0	FOR WRITING INTO THE BANK	
+DMA_DMA_WRITE_PAGE	.set	00004h	;0 0	WHICH PAGE TO PLOT (0 = 0, 1 = 1)
+DMA_ROW_TRANSFER_ENABLE	.set	00002h	;0 0	SRT ENABLE (UNTESTED 7/13/93)
+DMA_VIDEO_PAG_DISPLAYED	.set	00001h	;0 0	WHICH PAGE TO SCREEN (0 = 0, 1 = 1)
+
+DMA_SETUP_INIT		.set	DMA_FIFO_INC_DISABLE2
+;DMA_SETUP_INIT		.set	DMA_FIFO_INC_DISABLE2|DMA_NO_FIFO_BIT
+
+
+
+
+DMA_CTRL	.set	0980000h	;DMA CONTROL
+DMA_CMAP	.set	0980001h	;PALETTE NUMBER
+DMA_AX		.set	0980002h	;BITMAP AX (BITS 15-0)
+DMA_AY		.set	0980003h	;
+DMA_AZ		.set	0980004h	;
+DMA_BX		.set	0980005h	;BITMAP BX (BITS 15-0)
+DMA_BY		.set	0980006h	;
+DMA_BZ		.set	0980007h	;
+DMA_CX		.set	0980008h	;BITMAP CX (BITS 15-0)
+DMA_CY		.set	0980009h	;
+DMA_CZ		.set	098000Ah	;
+DMA_DX		.set	098000Bh	;BITMAP DX (BITS 15-0)
+DMA_DY		.set	098000Ch	;
+DMA_DZ		.set	098000Dh	;
+DMA_IVA		.set	098000Eh	;SOURCE AY (BITS 15-8) AX (BITS 7-0)
+DMA_IVB		.set	098000Fh	;SOURCE BY (BITS 15-8) BX (BITS 7-0)
+DMA_IVC		.set	0980010h	;SOURCE CY (BITS 15-8) CX (BITS 7-0)
+DMA_IVD		.set	0980011h	;SOURCE DY (BITS 15-8) DX (BITS 7-0)
+DMA_LINE	.set	0980012h	;Y LINE OFFSET (BITS 14-0)
+
+
+*DMA_CTRL BITS
+DMA_DITHER	.set	2000h		;DITHER
+DMA_CLIPEN	.set	1000h		;CLIP ENABLE
+DMA_ZWRSUP	.set	0800h		;ZWR SUPPRESS
+DMA_NZR		.set	0400h		;NON ZERO REPLACE
+DMA_METH1	.set	0200h		;FAST CONSTANT COLORED
+DMA_METH0	.set	0100h		;TEXTURE MAP
+DMA_COLOR	.set	00FFh		;COLOR FIELD
+
+
+
+
+*
+*	CRT CONTROL REGISTERS
+*
+*
+CRT_VCNT	.set	0980020h	;READ	the vertical line count (bits 0-8)
+
+CRT_SETUP	.set	0980020h	;WRITE	CRT SETUP REGISTER
+CRT_HADDRINC	.set	0980021h	;WRITE	horizontal addr increment(bits 09-00)	01ff
+CRT_HBLKSTART	.set	0980022h	;WRITE	horizontal blank start	(bits 09-00)	01fe
+CRT_HSYNCSTART	.set	0980023h	;WRITE	horizontal sync start	(bits 09-00)	0226
+CRT_HSYNCEND	.set	0980024h	;WRITE	horizontal sync end	(bits 09-00)	025e
+CRT_HBLKEND	.set	0980025h	;WRITE	horizontal blank end	(bits 09-00)	029f
+CRT_HTTL	.set	0980026h	;WRITE	horizontal total	(bits 09-00)	02a0
+CRT_VBLKSTART	.set	0980027h	;WRITE	vert blank start	(bits 08-00)	018f
+CRT_SYNCSTART	.set	0980028h	;WRITE	sync start		(bits 08-00)	0195
+CRT_SYNCEND	.set	0980029h	;WRITE	sync end		(bits 08-00)	0198
+CRT_VBLK	.set	098002Ah	;WRITE	blank end		(bits 08-00)	01b0
+CRT_VTTL	.set	098002Bh	;WRITE	vertical total		(bits 08-00)	01b0
+
+CRT_SETUP_DIVIDE	.set	8000h	;DIVIDE VIDCLK BY 2
+CRT_SETUP_CSYNCV	.set	4000h	;CSYNC OUT ON VERT
+CRT_SETUP_CSYNCH	.set	2000h	;CSYNC OUT ON HORZ
+CRT_SETUP_ISYNCV	.set	1000h	;INVERT VSYNC
+CRT_SETUP_ISYNCH	.set	0800h	;INVERT HSYNC
+CRT_SETUP_ICSYNC	.set	0400h	;INVERT CSYNC
+CRT_SETUP_RESERVED	.set	0200h	;RESERVED
+CRT_SETUP_DISP_INT_LN	.set	01FFh	;MASK DISPLAY INT LINE
+
+CRT_SETUP_INIT		.set	399|CRT_SETUP_CSYNCH
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+*	SYSTEM CONTROL FLAGS
+SYSCNTLR	.set	0994000h	;this is the REAL LOCATION (8 bits only)
+		.globl	_SYSCNTL	;this is the SHADOW LOCATION
+LED_OFF		.set	0000080h	;turn led off
+
+ATOD_RD		.set	040h
+ATOD_WR		.set	020h
+ATOD_MASK	.set	060h
+ATOD_R		.set	0993000h	;ATOD register
+
+WDOG		.set	0008h		;WATCHDOG
+;
+;once every 1.6 seconds
+;worst case 1.2 seconds
+;
+
+
+GENERAL_WP	.set	010h		;WRITE PROTECT VECTOR,IMAGE
+
+SND2_RESET	.set	002h		;0 = RESET ONBOARD SOUND SYSTEM
+
+SYSCNTL_INIT	.set	0FFh		;FIFO_RESET|FIFO_RETRANS|RUN_SELECT|ATOD_MASK|GENERAL_WP
+
+CMOS_WP_WORD	.set	0995020h	;CMOS WRITE PROTECT WORD
+CMOS_WP		.set	0C00h		;CMOS WP DISABLED  (ON = 0)
+*----------------------------------------------------------------------------
+
+
+
+MINUS_CHAR	.set	'>'
+
+
+*----------------------------------------------------------------------------
+*SWITCH EQUATES
+*
+*SWITCH =   (SWITCH1 >> 16) | (SWITCH3 << 16)
+*
+*
+
+SW_COIN1	.set	00000001h
+SW_COIN2	.set	00000002h
+SW_START	.set	00000004h
+SW_TILT		.set	00000008h
+SW_DIAG		.set	00000010h
+;SW_RES		.set	00000020h
+SW_COINSRV	.set	00000040h
+SW_COIN3	.set	00000080h
+SW_VOLMINUS	.set	00000100h
+SW_VOLPLUS	.set	00000200h
+SW_4TH		.set	00000400h	;4th
+SW_3RD		.set	00000800h	;3rd
+SW_2ND		.set	00001000h	;2nd
+SW_1ST		.set	00002000h	;1st
+SW_COIN4	.set	00004000h
+;SW_RES		.set	00008000h
+SW_BRAKE	.set	00010000h
+SW_RADIO	.set	00020000h
+SW_LOW		.set	00040000h
+SW_DEBUG	.set	00080000h
+SW_VIEW		.set	00100000h
+SW_VIEW0	.set	00100000h
+SW_VIEW1	.set	00200000h
+SW_VIEW2	.set	00400000h
+SW_VIEW3	.set	00800000h
+
+
+*WHEN SHIFTED DOWN 16 BITS
+SW_BRAKE_H	.set	0001h
+SW_RADIO_H	.set	0002h
+SW_LOW_H	.set	0004h
+SW_DEBUG_H	.set	0008h
+SW_VIEW_H	.set	0010h
+SW_VIEW0_H	.set	0010h
+SW_VIEW1_H	.set	0020h
+SW_VIEW2_H	.set	0040h
+SW_VIEW3_H	.set	0080h
+*----------------------------------------------------------------------------
+
+
+	.globl	DIPRAM
+*----------------------------------------------------------------------------
+*DIP SWITCH SETTINGS
+*SW 1 (RESET)
+*SW 2
+DIP_DIAG	.set	  80h	;#1	DIAGNOSTIC MODE
+DIP_MOTION	.set	  40h	;#2	MOTION CABINET
+DIP_STANDUP	.set	  20h	;#3	STANDUP
+DIP_FREEZE	.set	  10h	;#4	FREEZE SCREEN
+;		.set	   8h	;#5
+DIP_COMMP	.set	   4h	;#6	IS LINKING PRESENT?
+DIP_LINK0	.set	   2h	;#7	see comm dip settings
+DIP_LINK1	.set	   1h	;#8	see comm dip settings
+*SW 3
+;		.set	8000h	;#1	| \
+;		.set	4000h	;#2	|   \
+;		.set	2000h	;#3	|      COIN MODE
+;		.set	1000h	;#4	|
+;		.set	 800h	;#5	|   /
+;		.set	 400h	;#6	| /
+;		.set	 200h	;#7	(potential extra coin mode)
+DIP_COINCNTR	.set	 100h	;#8	FREE PLAY
+*----------------------------------------------------------------------------
+
+
+*----------------------------------------------------------------------------
+*DIP SWITCHES
+*
+CMDP_M		.set	3h
+CMDP_MASTER	.set	1h
+CMDP_SLAVE	.set	0
+*----------------------------------------------------------------------------
+

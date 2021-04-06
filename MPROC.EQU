@@ -1,0 +1,161 @@
+*MPROC.EQU
+*
+*COPYRIGHT (C) 1994  BY TV GAMES, INC.
+*ALL RIGHTS RESERVED
+*
+
+
+*ROUTINES
+	.globl	PRC_INIT
+	.globl	PRC_CREATE
+	.globl	PRC_CREATE_CHILD
+	.globl	PRC_DISPATCH
+	.globl	PRC_SLEEP
+	.globl	PRC_SUICIDE
+	.globl	PRC_KILL
+	.globl	PRC_KILLALL
+	.globl	PRC_EXISTP
+	.globl	PRC_XFER
+	.globl	PRC_FIND
+	.globl	PRC_FINDNEXT
+	.globl	PRC_FOLLOW
+
+	.globl	SLEEP
+	.globl	SUICIDE
+
+*DATA STRUCTURES
+	.globl	PACTIVE,PFREE
+	.globl	PACTIVEI
+
+	.globl	CURRENT_PROC,OLDSP
+
+*STRUCT	PROC
+PLINK	.set	0	;UH	LINK TO NEXT 32 BITS
+PSPTR	.set    1	;UH	PROCESS STACK POINTER 32 BITS
+PWAKE	.set	2	;UH
+PID	.set	3	;UH	PROCESS ID 
+PTIME	.set	4	;UH	SLEEP TIME X 16MSEC 
+PR4	.set	5	;UH
+PR5	.set	6	;UH
+PR6	.set	7	;FL
+PR7	.set	8	;FL
+PAR4	.set	9	;UH
+PAR5	.set	10	;UH
+PAR6	.set	11	;UH
+PDATA	.set    12	;UH	PROCESS DATA STORE
+PSDATA	.set    47      ;UH	PROCESS STACK DATA
+PRCSIZ	.set	62	;SIZ	END OF DATA STRUCTURE
+*ENDSTRUCT
+;PSADDR		.set	5	;UH	STARTUP ADDRESS
+;PDBGTIM	.set	13	;UD
+
+NUMPROC	.set	105	;NUMBER OF PROCESSES
+
+
+SLEEP	.MACRO	tiks
+	LDI	:tiks:,AR2
+	CALL	PRC_SLEEP
+	.ENDM
+
+DIE	.MACRO
+	BR	PRC_SUICIDE
+	.ENDM
+
+SLOOP	.MACRO	tiks,label
+	LDI	:tiks:,AR2
+	CALL	PRC_SLEEP
+	BU	:label:
+	.ENDM
+
+CREATE	.MACRO	label,pid
+	.data
+labelI?	.word	:label:
+	.text
+	LDI	@labelI?,AR2
+	LDI	:pid:,R2
+	CALL	PRC_CREATE
+	.ENDM
+
+
+CREATEL	.MACRO	label,pid
+	.data
+labelI?	.word	:label:
+	.sect	"THECODE"
+	LDI	@labelI?,AR2
+	LDI	:pid:,R2
+	CALL	PRC_CREATE
+	.ENDM
+
+
+CREATEC	.MACRO	label,pid
+	.data
+labelI?	.word	:label:
+	.text
+	LDI	@labelI?,AR2
+	LDI	:pid:,R2
+	CALL	PRC_CREATE_CHILD
+	.ENDM
+
+
+JSRP	.MACRO	label
+	.data
+labelI?	.word	:label:
+retrnI?	.word	retrn?
+	.text
+	LDI	*+AR7(PSPTR),AR0
+	LDI	@retrnI?,R0
+	STI	R0,*AR0++
+	STI	AR0,*+AR7(PSPTR)
+	
+	LDI	@labelI?,R0
+	BU	R0
+retrn?
+	.ENDM
+
+JSRPR	.MACRO	reg
+	.data
+retrnI?	.word	retrn?
+	.text
+	LDI	*+AR7(PSPTR),AR0
+	LDI	@retrnI?,R0
+	STI	R0,*AR0++
+	STI	AR0,*+AR7(PSPTR)
+	
+	BU	:reg:
+retrn?
+	.ENDM
+
+
+
+RETP	.MACRO
+	LDI	*+AR7(PSPTR),AR0
+	LDI	*--AR0,R0
+	STI	AR0,*+AR7(PSPTR)
+	BU	R0
+	.ENDM
+
+
+PUSHP	.MACRO	REG
+	LDI	*+AR7(PSPTR),AR0
+	STI	:REG:,*AR0++
+	STI	AR0,*+AR7(PSPTR)
+	.ENDM
+
+POPP	.MACRO	REG
+	LDI	*+AR7(PSPTR),AR0
+	LDI	*--AR0,:REG:
+	STI	AR0,*+AR7(PSPTR)
+	.ENDM
+
+
+PUSHFP	.MACRO	REG
+	LDI	*+AR7(PSPTR),AR0
+	STF	:REG:,*AR0++
+	STI	AR0,*+AR7(PSPTR)
+	.ENDM
+
+POPFP	.MACRO	REG
+	LDI	*+AR7(PSPTR),AR0
+	LDF	*--AR0,:REG:
+	STI	AR0,*+AR7(PSPTR)
+	.ENDM

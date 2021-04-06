@@ -1,0 +1,12 @@
+
+
+----------------
+  Symbol Table
+----------------
+
+Name            Type     Addr                Name            Type     Addr
+------          ----     ------              ------          ----     ------
+corn            sect     AF4B00              cornpops        pal      C14400
+cornpops        pal      C14400              cornpops        vector   C14482
+
+	[3 symbols]
